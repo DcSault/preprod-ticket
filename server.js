@@ -193,6 +193,7 @@ function processStats(tickets) {
 
     return stats;
 }
+<<<<<<< HEAD
 
 // Analyse Archivage
 function shouldArchive(ticket) {
@@ -221,6 +222,8 @@ async function archiveOldTickets() {
 setInterval(archiveOldTickets, 24 * 60 * 60 * 1000); // Vérification journalière
 
 
+=======
+>>>>>>> f678b52c689bf937be33210c8be12454b4854f1a
 // Routes d'authentification
 app.get('/login', async (req, res) => {
     const data = await readData();
