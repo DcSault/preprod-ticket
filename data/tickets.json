@@ -1,17 +1,6 @@
 {
   "tickets": [
     {
-      "id": "1737567287442",
-      "caller": "Quentin DIOT",
-      "reason": "",
-      "tags": [],
-      "status": "open",
-      "messages": [],
-      "createdAt": "2025-01-22T17:34:47.442Z",
-      "createdBy": "Victor",
-      "isGLPI": true
-    },
-    {
       "id": "1737567220672",
       "caller": "Quentin DIOT",
       "reason": "Compte Windows Bloqué ",
@@ -53,6 +42,19 @@
     "Victor"
   ],
   "archives": [
+    {
+      "id": "1737567287442",
+      "caller": "Quentin DIOT",
+      "reason": "",
+      "tags": [],
+      "status": "open",
+      "messages": [],
+      "createdAt": "2025-01-22T17:34:47.442Z",
+      "createdBy": "Victor",
+      "isGLPI": true,
+      "archivedAt": "2025-01-23T14:22:45.790Z",
+      "archivedBy": "Victor"
+    },
     {
       "id": "1737641664621",
       "caller": "Victor",
