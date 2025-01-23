@@ -10,5 +10,41 @@
     "reasons": [
       "Test"
     ]
-  }
+  },
+  "savedUsers": [
+    "Victor"
+  ],
+  "archives": [
+    {
+      "id": "1737641664621",
+      "caller": "Victor",
+      "reason": "Test",
+      "tags": [
+        "Test",
+        "EUUU"
+      ],
+      "status": "open",
+      "messages": [],
+      "createdAt": "2025-01-23T14:14:24.621Z",
+      "createdBy": "Victor",
+      "isGLPI": false,
+      "archivedAt": "2025-01-23T14:14:39.991Z",
+      "archivedBy": "Victor"
+    },
+    {
+      "id": "1737641053273",
+      "caller": "Victor",
+      "reason": "Test",
+      "tags": [
+        "ttt"
+      ],
+      "status": "open",
+      "messages": [],
+      "createdAt": "2025-01-23T14:04:13.273Z",
+      "createdBy": "Victor",
+      "isGLPI": false,
+      "archivedAt": "2025-01-23T14:10:46.609Z",
+      "archivedBy": "Victor"
+    }
+  ]
 }
