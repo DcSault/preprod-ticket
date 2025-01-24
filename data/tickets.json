@@ -1,24 +1,19 @@
 {
-  "tickets": [
-    {
-      "id": "1737644882510",
-      "caller": "TEst",
-      "reason": "Compte Windows Bloqué ",
-      "tags": [],
-      "status": "open",
-      "messages": [
-        {
-          "id": "1737644896800",
-          "content": "TEtsttr",
-          "type": "text",
-          "timestamp": "2025-01-23T15:08:16.800Z",
-          "author": "Victor"
-        }
-      ],
-      "createdAt": "2025-01-23T15:08:02.510Z",
-      "createdBy": "Victor",
-      "isGLPI": false
-    },
+  "tickets": [],
+  "tags": [],
+  "savedFields": {
+    "callers": [
+      "Quentin DIOT",
+      "TEst"
+    ],
+    "reasons": [
+      "Compte Windows Bloqué "
+    ]
+  },
+  "savedUsers": [
+    "Victor"
+  ],
+  "archives": [
     {
       "id": "1737567220672",
       "caller": "Quentin DIOT",
@@ -45,23 +40,31 @@
       ],
       "createdAt": "2025-01-22T17:33:40.672Z",
       "createdBy": "Victor",
-      "isGLPI": false
-    }
-  ],
-  "tags": [],
-  "savedFields": {
-    "callers": [
-      "Quentin DIOT",
-      "TEst"
-    ],
-    "reasons": [
-      "Compte Windows Bloqué "
-    ]
-  },
-  "savedUsers": [
-    "Victor"
-  ],
-  "archives": [
+      "isGLPI": false,
+      "archivedAt": "2025-01-24T07:47:41.054Z",
+      "archivedBy": "Victor"
+    },
+    {
+      "id": "1737644882510",
+      "caller": "TEst",
+      "reason": "Compte Windows Bloqué ",
+      "tags": [],
+      "status": "open",
+      "messages": [
+        {
+          "id": "1737644896800",
+          "content": "TEtsttr",
+          "type": "text",
+          "timestamp": "2025-01-23T15:08:16.800Z",
+          "author": "Victor"
+        }
+      ],
+      "createdAt": "2025-01-23T15:08:02.510Z",
+      "createdBy": "Victor",
+      "isGLPI": false,
+      "archivedAt": "2025-01-24T07:47:39.420Z",
+      "archivedBy": "Victor"
+    },
     {
       "id": "1737567287442",
       "caller": "Quentin DIOT",

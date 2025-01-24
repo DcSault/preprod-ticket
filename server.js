@@ -100,7 +100,8 @@ async function writeData(data) {
 }
 
 // Fonction Stats
-function processStats(tickets) {
+// Modification de la fonction processStats
+function processStats(tickets, archives = []) {
     const now = new Date();
     const stats = {
         day: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
@@ -135,11 +136,8 @@ function processStats(tickets) {
         stats.month.glpiData.push(0);
     }
 
-    // Analyse des tickets
-    const callerStats = {};
-    const tagStats = {};
-    
-    tickets.forEach(ticket => {
+    // Fonction pour traiter un ticket
+    const processTicket = (ticket) => {
         const date = new Date(ticket.createdAt);
         const dayDiff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
         const monthDiff = (now.getMonth() - date.getMonth()) + (now.getFullYear() - date.getFullYear()) * 12;
@@ -174,7 +172,17 @@ function processStats(tickets) {
         }
 
         callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
-    });
+    };
+
+    // Analyse des tickets et des archives
+    const callerStats = {};
+    const tagStats = {};
+    
+    // Traiter les tickets actifs
+    tickets.forEach(processTicket);
+    
+    // Traiter les archives
+    archives.forEach(processTicket);
 
     stats.topCallers = Object.entries(callerStats)
         .map(([name, count]) => ({ name, count }))
@@ -196,10 +204,10 @@ function processStats(tickets) {
 
 // Analyse Archivage
 function shouldArchive(ticket) {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
     const ticketDate = new Date(ticket.createdAt);
-    return ticketDate < thirtyDaysAgo;
+    return ticketDate < oneDayAgo;
 }
 
 async function archiveOldTickets() {
@@ -268,7 +276,7 @@ app.get('/', requireLogin, async (req, res) => {
 app.get('/stats', async (req, res) => {
     try {
         const data = await readData();
-        const stats = processStats(data.tickets);
+        const stats = processStats(data.tickets, data.archives || []);
         res.render('stats', { stats });
     } catch (error) {
         console.error('Erreur stats:', error);
@@ -276,10 +284,11 @@ app.get('/stats', async (req, res) => {
     }
 });
 
+// Mise à jour de la route d'export
 app.get('/api/stats/export', async (req, res) => {
     try {
         const data = await readData();
-        const stats = processStats(data.tickets);
+        const stats = processStats(data.tickets, data.archives || []);
         const workbook = new Excel.Workbook();
         
         const period = req.query.period || 'day';
