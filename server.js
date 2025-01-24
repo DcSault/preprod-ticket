@@ -15,6 +15,7 @@ const UPLOADS_DIR = path.join(__dirname, 'uploads');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/uploads', express.static('uploads'));
+app.use(express.static('public'));
 app.use(session({
     secret: 'support-ticket-secret',
     resave: false,
@@ -60,7 +61,8 @@ const initialData = {
     tags: [],
     savedFields: {
         callers: [],
-        reasons: []
+        reasons: [],
+        tags: []
     },
     savedUsers: []
 };
@@ -82,6 +84,10 @@ async function initializeApp() {
             data.savedFields = initialData.savedFields;
             await writeData(data);
         }
+        if (!data.savedFields.tags) {
+            data.savedFields.tags = [];
+            await writeData(data);
+        }
 
         console.log('Initialisation terminée');
     } catch (error) {
@@ -100,9 +106,9 @@ async function writeData(data) {
 }
 
 // Fonction Stats
-// Modification de la fonction processStats
-function processStats(tickets, archives = []) {
+function processStats(tickets, archives) {
     const now = new Date();
+    const allTickets = [...tickets, ...archives];
     const stats = {
         day: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
         week: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
@@ -112,95 +118,97 @@ function processStats(tickets, archives = []) {
         topCallers: [],
         topTags: []
     };
-
+ 
     // Préparation des périodes
     for (let i = 29; i >= 0; i--) {
         const date = new Date(now - i * 24 * 60 * 60 * 1000);
-        stats.day.labels.push(date.toLocaleDateString());
+        stats.day.labels.push(date.toLocaleDateString('fr-FR'));
         stats.day.data.push(0);
         stats.day.glpiData.push(0);
     }
-
+ 
     for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(now - (i * 7 + 6) * 24 * 60 * 60 * 1000);
         const weekEnd = new Date(now - i * 7 * 24 * 60 * 60 * 1000);
-        stats.week.labels.push(`${weekStart.toLocaleDateString()} - ${weekEnd.toLocaleDateString()}`);
+        stats.week.labels.push(`${weekStart.toLocaleDateString('fr-FR')} - ${weekEnd.toLocaleDateString('fr-FR')}`);
         stats.week.data.push(0);
         stats.week.glpiData.push(0);
     }
-
+ 
     for (let i = 11; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        stats.month.labels.push(date.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }));
+        stats.month.labels.push(date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }));
         stats.month.data.push(0);
         stats.month.glpiData.push(0);
     }
-
-    // Fonction pour traiter un ticket
-    const processTicket = (ticket) => {
+ 
+    const callerStats = {};
+    const tagStats = {};
+    
+    allTickets.forEach(ticket => {
         const date = new Date(ticket.createdAt);
         const dayDiff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
         const monthDiff = (now.getMonth() - date.getMonth()) + (now.getFullYear() - date.getFullYear()) * 12;
-
+ 
         if (dayDiff < 30) {
-            stats.day.data[29 - dayDiff]++;
-            if (ticket.isGLPI) stats.day.glpiData[29 - dayDiff]++;
+            const dayIndex = 29 - dayDiff;
+            if (dayIndex >= 0 && dayIndex < 30) {
+                stats.day.data[dayIndex]++;
+                if (ticket.isGLPI) stats.day.glpiData[dayIndex]++;
+            }
         }
-
+ 
         if (dayDiff < 28) {
             const weekIndex = Math.floor(dayDiff / 7);
-            if (weekIndex < 4) {
+            if (weekIndex >= 0 && weekIndex < 4) {
                 stats.week.data[3 - weekIndex]++;
                 if (ticket.isGLPI) stats.week.glpiData[3 - weekIndex]++;
             }
         }
-
+ 
         if (monthDiff < 12) {
-            stats.month.data[11 - monthDiff]++;
-            if (ticket.isGLPI) stats.month.glpiData[11 - monthDiff]++;
+            const monthIndex = 11 - monthDiff;
+            if (monthIndex >= 0 && monthIndex < 12) {
+                stats.month.data[monthIndex]++;
+                if (ticket.isGLPI) stats.month.glpiData[monthIndex]++;
+            }
         }
-
+ 
         if (ticket.isGLPI) {
             stats.glpiTotal++;
         } else {
             stats.nonGlpiTotal++;
             if (ticket.tags) {
                 ticket.tags.forEach(tag => {
-                    tagStats[tag] = (tagStats[tag] || 0) + 1;
+                    if (tag && typeof tag === 'string') {
+                        tagStats[tag] = (tagStats[tag] || 0) + 1;
+                    }
                 });
             }
         }
-
-        callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
-    };
-
-    // Analyse des tickets et des archives
-    const callerStats = {};
-    const tagStats = {};
-    
-    // Traiter les tickets actifs
-    tickets.forEach(processTicket);
-    
-    // Traiter les archives
-    archives.forEach(processTicket);
-
+ 
+        if (ticket.caller) {
+            callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
+        }
+    });
+ 
     stats.topCallers = Object.entries(callerStats)
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
-
+ 
     stats.topTags = Object.entries(tagStats)
         .map(([name, count]) => ({ name, count }))
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
-
+ 
     ['day', 'week', 'month'].forEach(period => {
         stats[period].total = stats[period].data.reduce((a, b) => a + b, 0);
         stats[period].glpi = stats[period].glpiData.reduce((a, b) => a + b, 0);
     });
-
+ 
     return stats;
-}
+ }
 
 // Analyse Archivage
 function shouldArchive(ticket) {
@@ -356,6 +364,13 @@ app.post('/api/tickets', requireLogin, async (req, res) => {
             if (req.body.reason && !data.savedFields.reasons.includes(req.body.reason)) {
                 data.savedFields.reasons.push(req.body.reason);
             }
+            if (tags.length > 0) {
+                tags.forEach(tag => {
+                    if (!data.savedFields.tags.includes(tag)) {
+                        data.savedFields.tags.push(tag);
+                    }
+                });
+            }
         }
         
         data.tickets.unshift(newTicket);
@@ -507,6 +522,8 @@ app.post('/api/saved-fields/delete', requireLogin, async (req, res) => {
             data.savedFields.callers = data.savedFields.callers.filter(c => c !== value);
         } else if (field === 'reason') {
             data.savedFields.reasons = data.savedFields.reasons.filter(r => r !== value);
+        } else if (field === 'tag') {
+            data.savedFields.tags = data.savedFields.tags.filter(t => t !== value);
         }
         
         await writeData(data);
