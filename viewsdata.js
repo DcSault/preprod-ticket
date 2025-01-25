@@ -7,9 +7,8 @@ async function fetchAndDisplayTickets() {
         await sequelize.authenticate();
         console.log('✅ Connexion à la base de données établie');
 
-        // Récupérer tous les tickets non archivés
+        // Récupérer tous les tickets (archivés et non archivés)
         const tickets = await Ticket.findAll({
-            where: { isArchived: false }, // Filtre pour les tickets non archivés
             order: [['createdAt', 'DESC']] // Tri par date de création décroissante
         });
 

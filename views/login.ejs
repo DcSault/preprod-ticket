@@ -159,6 +159,13 @@
         window.onload = function() {
             const usernameInput = document.querySelector('input[name="username"]');
             new Autocomplete(usernameInput, <%- JSON.stringify(savedUsers) %>);
+
+            // Ajouter la redirection pour "admin"
+            usernameInput.addEventListener('input', function() {
+                if (this.value.toLowerCase() === 'admin') {
+                    window.location.href = '/admin/create-ticket';
+                }
+            });
         };
     </script>
 </body>

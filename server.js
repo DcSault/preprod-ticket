@@ -480,10 +480,7 @@ async function processStats(tickets) {
         day: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
         week: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
         month: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
-        glpiTotal: 0,
-        nonGlpiTotal: 0,
-        topCallers: [],
-        topTags: []
+        detailedData: [] // Données détaillées pour le filtrage dynamique
     };
 
     // Initialiser les périodes
@@ -509,12 +506,16 @@ async function processStats(tickets) {
         stats.month.glpiData.push(0);
     }
 
-    // Accumulateurs pour les statistiques
-    const callerStats = {};
-    const tagStats = {};
-
     // Traiter chaque ticket
     tickets.forEach(ticket => {
+        // Ajouter les données détaillées pour le filtrage
+        stats.detailedData.push({
+            date: ticket.createdAt,
+            caller: ticket.caller,
+            tags: ticket.tags,
+            isGLPI: ticket.isGLPI
+        });
+
         const date = new Date(ticket.createdAt);
         const dayDiff = Math.floor((now - date) / (1000 * 60 * 60 * 24));
         const monthDiff = (now.getMonth() - date.getMonth()) + (now.getFullYear() - date.getFullYear()) * 12;
@@ -545,37 +546,7 @@ async function processStats(tickets) {
                 if (ticket.isGLPI) stats.month.glpiData[monthIndex]++;
             }
         }
-
-        // Comptage GLPI vs non-GLPI
-        if (ticket.isGLPI) {
-            stats.glpiTotal++;
-        } else {
-            stats.nonGlpiTotal++;
-            if (ticket.tags) {
-                ticket.tags.forEach(tag => {
-                    if (tag && typeof tag === 'string') {
-                        tagStats[tag] = (tagStats[tag] || 0) + 1;
-                    }
-                });
-            }
-        }
-
-        // Statistiques des appelants
-        if (ticket.caller) {
-            callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
-        }
     });
-
-    // Calculer les top 5
-    stats.topCallers = Object.entries(callerStats)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-    stats.topTags = Object.entries(tagStats)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
 
     // Calculer les totaux pour chaque période
     ['day', 'week', 'month'].forEach(period => {
