@@ -1,295 +1,394 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html class="dark:bg-gray-900">
+
 <head>
+    <title>Login - CallFix</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Système de Connexion Avancé</title>
-    <link rel="stylesheet" href="/public/styles/login.css">
-    <!-- Importation de Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="texture-bg">
-    <!-- Effets de particules pour l'arrière-plan -->
-    <div class="circuit-pattern"></div>
-    <% for(let i = 0; i < 8; i++) { %>
-        <div class="particle" style="
-            top: <%= Math.random() * 100 %>%; 
-            left: <%= Math.random() * 100 %>%; 
-            width: <%= Math.random() * 100 + 50 %>px; 
-            height: <%= Math.random() * 100 + 50 %>px; 
-            animation-delay: <%= Math.random() * 5 %>s;
-            animation-duration: <%= Math.random() * 10 + 10 %>s;
-        "></div>
-    <% } %>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    
+    <!-- Initialisation du thème -->
+    <script>
+        // Synchroniser le thème au chargement de la page
+        const theme = localStorage.getItem('color-theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 
-    <div class="page-fade-in min-h-screen flex flex-col items-center justify-center p-4">
-        <div class="card-container neumorph glow-effect bg-white dark:bg-gray-800 p-8 rounded-xl max-w-md w-full shadow-lg form-slide-up">
-            <!-- En-tête avec Logo -->
-            <div class="text-center mb-8">
-                <h1 class="logo-text text-3xl font-bold">TechConnect</h1>
-                <div class="typing-effect mt-2 text-gray-600 dark:text-gray-300">Bienvenue sur votre portail</div>
-            </div>
-            
-            <!-- Formulaire de connexion -->
-            <form action="/login" method="POST" id="loginForm" class="space-y-6">
-                <% if(locals.errorMessage) { %>
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                        <span class="block sm:inline"><%= errorMessage %></span>
-                    </div>
-                <% } %>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shine {
+            from { 
+                background-position: -200% center; 
+            }
+            to { 
+                background-position: 200% center; 
+            }
+        }
+        
+        .page-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        .form-slide-up {
+            animation: slideInUp 0.6s ease-out;
+            animation-delay: 0.3s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+        
+        .btn-pulse {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-pulse:hover {
+            animation: pulse 1s infinite;
+        }
+        
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-shine::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.2) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: none;
+            transition: left 0.5s ease;
+        }
+        
+        .btn-shine:hover::before {
+            left: 100%;
+            animation: shine 1s forwards;
+        }
+        
+        .autocomplete-list {
+            display: none;
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .dark .autocomplete-list {
+            background: #1f2937;
+            border-color: #374151;
+            color: white;
+        }
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            color: #1f2937;
+            transition: all 0.2s ease;
+        }
+
+        .dark .autocomplete-item {
+            color: #f3f4f6;
+        }
+
+        .autocomplete-item:hover {
+            background-color: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .dark .autocomplete-item:hover {
+            background-color: #374151;
+        }
+
+        .autocomplete-item.selected {
+            background-color: #e5e7eb;
+        }
+
+        .dark .autocomplete-item.selected {
+            background-color: #4b5563;
+        }
+
+        /* Transition du thème */
+        * {
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .input-focus-effect:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .link-hover-effect {
+            position: relative;
+        }
+        
+        .link-hover-effect::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: currentColor;
+            transition: width 0.3s ease;
+        }
+        
+        .link-hover-effect:hover::after {
+            width: 100%;
+        }
+        
+        /* Logo animation */
+        .logo-text {
+            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 5s ease infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* SVG icon animations */
+        .svg-icon {
+            transition: transform 0.3s;
+        }
+        
+        .svg-container:hover .svg-icon {
+            transform: translateY(-3px) rotate(5deg);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+    <div class="min-h-screen flex items-center justify-center p-4 page-fade-in">
+        <div class="max-w-md w-full">
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow form-slide-up">
+                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white logo-text">CallFix</h1>
                 
-                <div class="relative">
-                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <i class="fas fa-user text-primary mr-2"></i>Nom d'utilisateur
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            id="username" 
-                            name="username" 
-                            class="input-focus-effect w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                            placeholder="Entrez votre nom d'utilisateur" 
-                            required
-                            list="usernamesList"
-                            autocomplete="off"
-                        >
-                        <div class="input-border-effect absolute bottom-0 left-0 h-0.5 w-full bg-gray-200 dark:bg-gray-600">
-                            <div class="absolute inset-0 bg-primary transform scale-x-0 origin-left transition-transform duration-300"></div>
-                        </div>
-                        <!-- Datalist pour suggestion d'autocomplétion -->
-                        <datalist id="usernamesList">
-                            <% if(locals.recentUsers) { %>
-                                <% recentUsers.forEach(user => { %>
-                                    <option value="<%= user %>">
-                                <% }); %>
-                            <% } %>
-                        </datalist>
-                    </div>
-                    <div id="autocomplete-container" class="relative">
-                        <div id="autocomplete-list" class="autocomplete-list"></div>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        <i class="fas fa-lock text-primary mr-2"></i>Mot de passe
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="password" 
-                            id="password" 
-                            name="password" 
-                            class="input-focus-effect w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
-                            placeholder="Entrez votre mot de passe" 
-                            required
-                        >
-                        <button 
-                            type="button" 
-                            class="absolute inset-y-0 right-0 pr-3 flex items-center" 
-                            id="togglePassword"
-                        >
-                            <i class="fas fa-eye text-gray-400 hover:text-primary transition-colors duration-200"></i>
-                        </button>
-                        <div class="input-border-effect absolute bottom-0 left-0 h-0.5 w-full bg-gray-200 dark:bg-gray-600">
-                            <div class="absolute inset-0 bg-primary transform scale-x-0 origin-left transition-transform duration-300"></div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            id="remember-me" 
-                            name="remember-me" 
-                            type="checkbox" 
-                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                        >
-                        <label for="remember-me" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                            Se souvenir de moi
-                        </label>
-                    </div>
+                <form action="/login" method="POST" class="space-y-4">
                     <div>
-                        <a href="/forgot-password" class="link-hover-effect text-sm text-primary hover:text-primary-dark">
-                            Mot de passe oublié?
-                        </a>
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
+                        <div class="relative">
+                            <input type="text"
+                                   name="username"
+                                   required
+                                   placeholder="Entrez votre nom"
+                                   class="w-full p-2 border rounded
+                                          text-gray-900 dark:text-white
+                                          bg-white dark:bg-gray-700
+                                          border-gray-300 dark:border-gray-600
+                                          focus:border-blue-500 dark:focus:border-blue-400
+                                          focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
+                                          placeholder-gray-400 dark:placeholder-gray-500
+                                          input-focus-effect">
+                            <!-- La datalist a été supprimée car elle est redondante avec l'autocomplétion personnalisée -->
+                        </div>
                     </div>
-                </div>
-                
-                <div>
-                    <button 
-                        type="submit" 
-                        class="btn-3d w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all duration-200 font-semibold"
-                    >
-                        <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+
+                    <button type="submit"
+                            class="w-full bg-blue-500 text-white px-4 py-2 rounded
+                                   hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                   dark:focus:ring-offset-gray-800
+                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]
+                                   btn-pulse btn-shine">
+                        Se connecter
                     </button>
-                </div>
-                
-                <!-- Séparateur -->
-                <div class="relative flex items-center justify-center mt-6">
-                    <div class="border-t border-gray-300 dark:border-gray-600 w-full"></div>
-                    <div class="absolute bg-white dark:bg-gray-800 px-3 text-sm text-gray-500 dark:text-gray-400">
-                        ou continuer avec
-                    </div>
-                </div>
-                
-                <!-- Boutons de connexion sociale -->
-                <div class="flex justify-center space-x-4 mt-6">
-                    <a href="/auth/google" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                        <svg class="svg-icon h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+                </form>
+
+                <div class="mt-6 flex justify-center space-x-6">
+                    <!-- Lien "Voir les statistiques" -->
+                    <a href="/stats"
+                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-5 h-5 svg-icon"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
+                        <span>Voir les statistiques</span>
                     </a>
-                    <a href="/auth/facebook" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                        <svg class="svg-icon h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+               
+                    <!-- Bouton "Générer un Rapport" -->
+                    <a href="/report"
+                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-5 h-5 svg-icon"
+                             fill="none"
+                             stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                    </a>
-                    <a href="/auth/github" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                        <svg class="svg-icon h-6 w-6 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
-                        </svg>
+                        <span>Générer un Rapport</span>
                     </a>
                 </div>
-                
-                <!-- Lien d'inscription -->
-                <div class="text-center mt-6">
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                        Vous n'avez pas de compte? 
-                        <a href="/register" class="link-hover-effect text-primary font-medium hover:text-primary-dark">
-                            S'inscrire
-                        </a>
-                    </p>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Bouton de changement de thème (clair/sombre) -->
-        <button id="themeToggle" class="mt-6 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary animate-pulse">
-            <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
-            <i class="fas fa-moon text-blue-300 hidden dark:block"></i>
-        </button>
-        
-        <!-- Pied de page -->
-        <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
-            <p>&copy; <%= new Date().getFullYear() %> TechConnect. Tous droits réservés.</p>
-            <div class="mt-2 flex justify-center space-x-4">
-                <a href="/privacy" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Confidentialité</a>
-                <a href="/terms" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Conditions</a>
-                <a href="/contact" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Contact</a>
             </div>
         </div>
     </div>
 
+    <!-- Script du gestionnaire de thème -->
+    <script src="/js/themeManager.js"></script>
+
     <script>
-        // Script pour le thème clair/sombre
-        document.addEventListener('DOMContentLoaded', () => {
-            const themeToggle = document.getElementById('themeToggle');
-            const body = document.documentElement;
-            
-            // Vérifiez les préférences utilisateur ou le stockage local
-            const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            const savedTheme = localStorage.getItem('theme');
-            
-            if (savedTheme === 'dark' || (!savedTheme && darkModeMediaQuery.matches)) {
-                body.classList.add('dark');
+        // Classe d'autocomplétion
+        class Autocomplete {
+            constructor(input, items) {
+                this.input = input;
+                this.items = items;
+                this.currentFocus = -1;
+                this.setup();
             }
-            
-            themeToggle.addEventListener('click', () => {
-                body.classList.toggle('dark');
-                const theme = body.classList.contains('dark') ? 'dark' : 'light';
-                localStorage.setItem('theme', theme);
-            });
-            
-            // Script pour afficher/masquer le mot de passe
-            const togglePassword = document.getElementById('togglePassword');
-            const passwordInput = document.getElementById('password');
-            
-            togglePassword.addEventListener('click', () => {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                
-                // Change l'icône
-                const icon = togglePassword.querySelector('i');
-                icon.classList.toggle('fa-eye');
-                icon.classList.toggle('fa-eye-slash');
-            });
-            
-            // Auto-complétion personnalisée
-            const usernameInput = document.getElementById('username');
-            const autocompleteList = document.getElementById('autocomplete-list');
-            const users = Array.from(document.querySelectorAll('#usernamesList option')).map(option => option.value);
-            
-            usernameInput.addEventListener('input', function() {
-                const inputVal = this.value.toLowerCase();
-                
-                // Effacer la liste actuelle
-                autocompleteList.innerHTML = '';
-                
-                if (inputVal.length < 1) {
-                    autocompleteList.classList.remove('show');
+
+            setup() {
+                this.list = document.createElement('div');
+                this.list.classList.add('autocomplete-list');
+                this.input.parentNode.appendChild(this.list);
+
+                this.input.addEventListener('input', () => this.updateList());
+                this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+                document.addEventListener('click', (e) => {
+                    if (!this.input.contains(e.target)) {
+                        this.list.classList.remove('show');
+                    }
+                });
+            }
+
+            updateList() {
+                const value = this.input.value.toLowerCase();
+                this.currentFocus = -1;
+                this.list.innerHTML = '';
+
+                if (!value) {
+                    this.list.classList.remove('show');
                     return;
                 }
-                
-                // Filtrer les suggestions
-                const suggestions = users.filter(user => 
-                    user.toLowerCase().includes(inputVal)
+
+                const matchingItems = this.items.filter(item =>
+                    item.toLowerCase().includes(value)
                 );
-                
-                if (suggestions.length > 0) {
-                    autocompleteList.classList.add('show');
-                    
-                    suggestions.forEach(suggestion => {
-                        const item = document.createElement('div');
-                        item.className = 'autocomplete-item';
+
+                if (matchingItems.length) {
+                    this.list.classList.add('show');
+                    matchingItems.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.classList.add('autocomplete-item');
                         
-                        // Mettre en surbrillance le texte correspondant
-                        const regex = new RegExp(`(${inputVal})`, 'gi');
-                        const highlightedText = suggestion.replace(regex, '<strong>$1</strong>');
+                        // Mettre en évidence la partie correspondante
+                        const regex = new RegExp(`(${value})`, 'gi');
+                        const highlightedText = item.replace(regex, '<b>$1</b>');
+                        div.innerHTML = highlightedText;
                         
-                        item.innerHTML = highlightedText;
+                        // Ajouter un délai progressif pour l'animation
+                        div.style.animationDelay = `${index * 50}ms`;
+                        div.style.opacity = "0";
+                        div.style.animation = "slideInUp 0.3s ease-out forwards";
                         
-                        item.addEventListener('click', function() {
-                            usernameInput.value = suggestion;
-                            autocompleteList.classList.remove('show');
+                        div.addEventListener('click', () => {
+                            this.input.value = item;
+                            this.list.classList.remove('show');
                         });
-                        
-                        autocompleteList.appendChild(item);
+                        this.list.appendChild(div);
                     });
-                } else {
-                    autocompleteList.classList.remove('show');
                 }
-            });
-            
-            // Fermer l'autocomplétion quand on clique ailleurs
-            document.addEventListener('click', function(e) {
-                if (e.target !== usernameInput && e.target !== autocompleteList) {
-                    autocompleteList.classList.remove('show');
-                }
-            });
-            
-            // Animation des particules
-            const particles = document.querySelectorAll('.particle');
-            particles.forEach(particle => {
-                // Animation différente pour chaque particule
-                const randomDelay = Math.random() * 5;
-                const randomDuration = Math.random() * 10 + 10;
-                
-                particle.style.animationDelay = `${randomDelay}s`;
-                particle.style.animationDuration = `${randomDuration}s`;
-            });
-            
-            // Validation du formulaire
-            const loginForm = document.getElementById('loginForm');
-            loginForm.addEventListener('submit', function(e) {
-                const username = usernameInput.value.trim();
-                const password = passwordInput.value.trim();
-                
-                if (username === '' || password === '') {
+            }
+
+            handleKeydown(e) {
+                const items = this.list.getElementsByTagName('div');
+                if (!items.length) return;
+
+                if (e.key === 'ArrowDown') {
+                    this.currentFocus++;
+                    if (this.currentFocus >= items.length) this.currentFocus = 0;
+                    this.setActive(items);
+                } else if (e.key === 'ArrowUp') {
+                    this.currentFocus--;
+                    if (this.currentFocus < 0) this.currentFocus = items.length - 1;
+                    this.setActive(items);
+                } else if (e.key === 'Enter' && this.currentFocus > -1) {
                     e.preventDefault();
-                    alert('Veuillez remplir tous les champs');
+                    items[this.currentFocus].click();
+                }
+            }
+
+            setActive(items) {
+                Array.from(items).forEach(item => item.classList.remove('selected'));
+                if (this.currentFocus > -1) {
+                    items[this.currentFocus].classList.add('selected');
+                    // Assurer que l'élément sélectionné est visible
+                    items[this.currentFocus].scrollIntoView({block: 'nearest'});
+                }
+            }
+        }
+
+        // Initialisation au chargement de la page
+        window.onload = function() {
+            const usernameInput = document.querySelector('input[name="username"]');
+            new Autocomplete(usernameInput, <%- JSON.stringify(savedUsers) %>);
+
+            // Redirection admin
+            usernameInput.addEventListener('input', function() {
+                if (this.value.toLowerCase() === 'admin') {
+                    window.location.href = '/admin/create-ticket';
                 }
             });
-        });
+
+            // Animation lors du focus sur l'input
+            usernameInput.addEventListener('focus', function() {
+                this.classList.add('animate__animated', 'animate__pulse');
+            });
+
+            usernameInput.addEventListener('blur', function() {
+                this.classList.remove('animate__animated', 'animate__pulse');
+            });
+        };
     </script>
 </body>
 </html>
