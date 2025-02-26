@@ -6,17 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* Animation du titre principal */
+        /* Animations essentielles */
         @keyframes logoPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
             100% { transform: scale(1); }
-        }
-        
-        @keyframes borderGlow {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
         }
         
         .logo-pulse {
@@ -32,13 +26,12 @@
             background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.8) 50%, rgba(59, 130, 246, 0));
             bottom: -4px;
             left: 0;
-            transform-origin: bottom;
             transform: scaleX(0.8);
             opacity: 0.7;
             animation: logoPulse 3s infinite alternate;
         }
         
-        /* Animations générales */
+        /* Menus et listes */
         .autocomplete-list {
             display: none;
             position: absolute;
@@ -56,19 +49,8 @@
         .autocomplete-item { padding: 0.5rem 1rem; cursor: pointer; }
         .autocomplete-item:hover { background-color: #f3f4f6; }
         .dark .autocomplete-item:hover { background-color: #374151; }
-        .autocomplete-item.selected { background-color: #e5e7eb; }
-        .dark .autocomplete-item.selected { background-color: #4b5563; }
-        
-        /* Transitions et animations */
-        *, ::before, ::after { 
-            transition: background-color 0.2s, border-color 0.2s, color 0.2s, transform 0.2s, box-shadow 0.2s; 
-        }
         
         /* Menu déconnexion */
-        .user-info {
-            position: relative;
-        }
-        
         .logout-menu {
             position: absolute;
             right: 0;
@@ -77,26 +59,22 @@
             background: white;
             border-radius: 0.375rem;
             padding: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+            transition: 0.2s;
             z-index: 50;
         }
         
-        .dark .logout-menu {
-            background: #1f2937;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1);
-        }
-        
+        .dark .logout-menu { background: #1f2937; }
         .user-info:hover .logout-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
         
-        /* Animations de ticket */
+        /* Carte de ticket */
         .ticket-card {
             border-left: 4px solid #e5e7eb;
             animation: fadeIn 0.4s ease-out forwards;
@@ -104,9 +82,12 @@
         .ticket-card.blocking { border-left-color: #ef4444; }
         .ticket-card.glpi { border-left-color: #8b5cf6; }
         
-        /* Animations diverses */
+        /* Animations */
         @keyframes fadeIn { from {opacity:0;transform:translateY(-8px)} to {opacity:1;transform:translateY(0)} }
         @keyframes fadeOut { from {opacity:1;transform:translateY(0)} to {opacity:0;transform:translateY(8px)} }
+        
+        /* Transitions */
+        *, ::before, ::after { transition: background-color 0.2s, color 0.2s, transform 0.2s, opacity 0.2s; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
@@ -170,14 +151,14 @@
             </h2>
             <form action="/api/tickets" method="POST" class="space-y-4">
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="flex items-center gap-2">
+                    <label class="flex items-center gap-2">
                         <input type="checkbox" id="isGLPI" name="isGLPI" value="true" class="rounded" onchange="toggleGLPIFields(this)">
-                        <label for="isGLPI" class="text-gray-700 dark:text-gray-300">Ticket GLPI</label>
-                    </div>
-                    <div class="flex items-center gap-2">
+                        <span class="text-gray-700 dark:text-gray-300">Ticket GLPI</span>
+                    </label>
+                    <label class="flex items-center gap-2">
                         <input type="checkbox" id="isBlocking" name="isBlocking" value="true" class="rounded">
-                        <label for="isBlocking" class="text-red-600 dark:text-red-400 font-medium">Bloquant</label>
-                    </div>
+                        <span class="text-red-600 dark:text-red-400 font-medium">Bloquant</span>
+                    </label>
                 </div>
                                 <!-- Champ appelant -->
                                 <div>
@@ -284,14 +265,6 @@
                                                     year: 'numeric', month: 'long', day: 'numeric', 
                                                     hour: '2-digit', minute: '2-digit'
                                                 }) %>
-                                                par <%= ticket.createdBy %>
-                                                <% if (ticket.lastModifiedBy) { %>
-                                                    <br>Modifié le <%= new Date(ticket.lastModifiedAt).toLocaleString('fr-FR', {
-                                                        year: 'numeric', month: 'long', day: 'numeric', 
-                                                        hour: '2-digit', minute: '2-digit'
-                                                    }) %>
-                                                    par <%= ticket.lastModifiedBy %>
-                                                <% } %>
                                             </p>
                                         </div>
                                         <div class="flex gap-2 flex-wrap md:flex-nowrap">
@@ -315,14 +288,12 @@
                                                 </svg>
                                                 Modifier
                                             </a>
-                                            <form action="/api/tickets/<%= ticket.id %>/delete" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?')" class="inline">
-                                                <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all hover:shadow-md">
-                                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                    Supprimer
-                                                </button>
-                                            </form>
+                                            <button onclick="deleteTicket('<%= ticket.id %>')" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all hover:shadow-md">
+                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Supprimer
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -333,64 +304,6 @@
                                     <p class="text-gray-600 dark:text-gray-300">Aucun appel en cours.</p>
                                 </div>
                             <% } %>
-                        </div>
-                        
-                        <!-- Page Génération de rapport -->
-                        <div id="reportSection" class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md hidden">
-                            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                Générer un Rapport
-                            </h2>
-                            
-                            <form action="/api/report/generate" method="POST" class="space-y-4">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Date de début</label>
-                                        <input type="date" name="startDate" required class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Date de fin</label>
-                                        <input type="date" name="endDate" required class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Type de rapport</label>
-                                    <select name="reportType" class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
-                                        <option value="all">Tous les appels</option>
-                                        <option value="glpi">Tickets GLPI seulement</option>
-                                        <option value="nonGlpi">Tickets non-GLPI seulement</option>
-                                        <option value="blocking">Tickets bloquants seulement</option>
-                                    </select>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Format</label>
-                                    <div class="flex gap-4">
-                                        <label class="inline-flex items-center">
-                                            <input type="radio" name="format" value="pdf" checked class="form-radio text-blue-500">
-                                            <span class="ml-2 text-gray-700 dark:text-gray-300">PDF</span>
-                                        </label>
-                                        <label class="inline-flex items-center">
-                                            <input type="radio" name="format" value="excel" class="form-radio text-green-500">
-                                            <span class="ml-2 text-gray-700 dark:text-gray-300">Excel</span>
-                                        </label>
-                                        <label class="inline-flex items-center">
-                                            <input type="radio" name="format" value="csv" class="form-radio text-yellow-500">
-                                            <span class="ml-2 text-gray-700 dark:text-gray-300">CSV</span>
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    <span>Télécharger le rapport</span>
-                                </button>
-                            </form>
                         </div>
                     </div>
                 
@@ -404,79 +317,100 @@
                         </svg>
                     </button>
                 
-                    <!-- Feedback pour le thème -->
-                    <div id="theme-feedback" class="fixed top-4 right-4 bg-white dark:bg-gray-800 py-2 px-4 rounded-md shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none z-50">
+                    <!-- Feedback pour le thème (simplifié) -->
+                    <div id="theme-feedback" class="fixed top-4 right-4 bg-white dark:bg-gray-800 py-2 px-4 rounded-md shadow-lg transition-opacity duration-500 opacity-0 z-50">
                         <span id="theme-message" class="text-gray-900 dark:text-white"></span>
                     </div>
                 
                     <script>
-                        // Fonctions utilitaires
-                        const $ = id => document.getElementById(id);
-                        
+                        // Code JavaScript compact et optimisé
+                        document.addEventListener('DOMContentLoaded', () => {
+                            // Initialisation du thème
+                            initTheme();
+                            
+                            // Initialisation des écouteurs d'événements pour les fonctionnalités
+                            document.querySelectorAll('a[href="/report"]').forEach(link => {
+                                link.addEventListener('click', e => {
+                                    e.preventDefault();
+                                    alert('Fonctionnalité de rapport bientôt disponible!');
+                                });
+                            });
+                        });
+                
                         // Gestionnaire de thème
                         function initTheme() {
-                            const darkMode = localStorage.getItem('theme') === 'dark' || 
-                                          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                            // Vérification si le thème sombre est activé via localStorage ou préférence système
+                            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                            const storedTheme = localStorage.getItem('theme');
                             
-                            document.documentElement.classList.toggle('dark', darkMode);
+                            // Appliquer le thème initial
+                            if (storedTheme === 'dark' || (!storedTheme && prefersDark)) {
+                                document.documentElement.classList.add('dark');
+                            } else {
+                                document.documentElement.classList.remove('dark');
+                            }
                             
-                            $('theme-toggle')?.addEventListener('click', () => {
-                                const isDark = document.documentElement.classList.toggle('dark');
-                                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                                
-                                // Afficher le feedback
-                                const feedback = $('theme-feedback');
-                                const messageEl = $('theme-message');
-                                
-                                if (feedback && messageEl) {
-                                    messageEl.textContent = isDark ? 'Mode sombre activé' : 'Mode clair activé';
-                                    feedback.classList.remove('opacity-0');
-                                    
-                                    setTimeout(() => feedback.classList.add('opacity-0'), 2000);
-                                }
-                            });
+                            // Écouteur d'événement pour le bouton
+                            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
                         }
                         
-                        // Toggle des champs mémorisés
-                        function toggleSavedFields() {
-                            const section = $('savedFieldsSection');
-                            const icon = $('savedFieldsIcon');
-                            const buttonText = $('savedFieldsButtonText');
+                        // Fonction pour basculer le thème
+                        function toggleTheme() {
+                            const isDark = document.documentElement.classList.toggle('dark');
                             
-                            if (section) {
-                                if (section.classList.contains('hidden')) {
-                                    section.classList.remove('hidden');
-                                    setTimeout(() => {
-                                        section.classList.remove('opacity-0', '-translate-y-4');
-                                    }, 10);
-                                    icon.style.transform = 'rotate(180deg)';
-                                    buttonText.textContent = 'Masquer les champs mémorisés';
-                                } else {
-                                    section.classList.add('opacity-0', '-translate-y-4');
-                                    setTimeout(() => {
-                                        section.classList.add('hidden');
-                                    }, 300);
-                                    icon.style.transform = 'rotate(0deg)';
-                                    buttonText.textContent = 'Afficher les champs mémorisés';
-                                }
+                            // Sauvegarder la préférence
+                            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                            
+                            // Afficher le feedback
+                            const feedback = document.getElementById('theme-feedback');
+                            const message = document.getElementById('theme-message');
+                            
+                            if (feedback && message) {
+                                message.textContent = isDark ? 'Mode sombre activé' : 'Mode clair activé';
+                                feedback.style.opacity = '1';
+                                
+                                setTimeout(() => { feedback.style.opacity = '0'; }, 2000);
                             }
                         }
                         
-                        // Gestion des champs GLPI
+                        // Toggle des champs GLPI
                         function toggleGLPIFields(checkbox) {
                             document.querySelectorAll('.non-glpi-field').forEach(field => {
                                 field.style.opacity = checkbox.checked ? '0.5' : '1';
                                 field.style.pointerEvents = checkbox.checked ? 'none' : 'auto';
                                 
-                                const inputs = field.querySelectorAll('input');
-                                inputs.forEach(input => {
-                                    checkbox.checked ? input.removeAttribute('required') : 
-                                                      (input.name === 'reason' ? input.setAttribute('required', '') : null);
+                                field.querySelectorAll('input').forEach(input => {
+                                    if (checkbox.checked) {
+                                        input.removeAttribute('required');
+                                    } else if (input.name === 'reason') {
+                                        input.setAttribute('required', '');
+                                    }
                                 });
                             });
                         }
                         
-                        // Archivage d'un ticket avec animation
+                        // Toggle des champs mémorisés
+                        function toggleSavedFields() {
+                            const section = document.getElementById('savedFieldsSection');
+                            const icon = document.getElementById('savedFieldsIcon');
+                            const btnText = document.getElementById('savedFieldsButtonText');
+                            
+                            if (section.classList.contains('hidden')) {
+                                section.classList.remove('hidden');
+                                setTimeout(() => {
+                                    section.classList.remove('opacity-0', '-translate-y-4');
+                                }, 10);
+                                icon.style.transform = 'rotate(180deg)';
+                                btnText.textContent = 'Masquer les champs mémorisés';
+                            } else {
+                                section.classList.add('opacity-0', '-translate-y-4');
+                                setTimeout(() => { section.classList.add('hidden'); }, 300);
+                                icon.style.transform = 'rotate(0)';
+                                btnText.textContent = 'Afficher les champs mémorisés';
+                            }
+                        }
+                        
+                        // Archiver un ticket
                         function archiveTicket(id) {
                             if (!confirm('Voulez-vous archiver cet appel ?')) return;
                             
@@ -486,51 +420,57 @@
                             })
                             .then(response => {
                                 if (response.ok) {
-                                    const ticketElement = document.querySelector(`[data-ticket-id="${id}"]`);
-                                    if (ticketElement) {
-                                        ticketElement.style.opacity = '0';
-                                        ticketElement.style.transform = 'translateX(100px)';
+                                    const ticket = document.querySelector(`[data-ticket-id="${id}"]`);
+                                    if (ticket) {
+                                        ticket.style.opacity = '0';
+                                        ticket.style.transform = 'translateX(100px)';
                                         setTimeout(() => {
-                                            ticketElement.remove();
-                                            if (document.querySelectorAll('.ticket-card').length === 0) {
+                                            ticket.remove();
+                                            if (!document.querySelector('.ticket-card')) {
                                                 location.reload();
                                             }
-                                        }, 500);
+                                        }, 300);
                                     }
                                 } else {
-                                    alert("Une erreur est survenue lors de l'archivage du ticket.");
+                                    alert("Erreur lors de l'archivage du ticket");
                                 }
                             })
-                            .catch(error => {
-                                console.error('Erreur:', error);
-                                alert("Une erreur est survenue lors de l'archivage du ticket.");
+                            .catch(err => {
+                                console.error(err);
+                                alert("Erreur lors de l'archivage du ticket");
                             });
                         }
                         
-                        // Afficher/masquer la section de rapport
-                        function showReportSection() {
-                            const reportSection = $('reportSection');
-                            if (reportSection) {
-                                reportSection.classList.remove('hidden');
-                                setTimeout(() => {
-                                    reportSection.classList.add('opacity-100');
-                                    reportSection.scrollIntoView({ behavior: 'smooth' });
-                                }, 10);
-                            }
-                        }
-                        
-                        // Initialiser les fonctionnalités
-                        document.addEventListener('DOMContentLoaded', () => {
-                            initTheme();
+                        // Supprimer un ticket
+                        function deleteTicket(id) {
+                            if (!confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?')) return;
                             
-                            // Gérer les liens du menu
-                            document.querySelectorAll('a[href="/report"]').forEach(link => {
-                                link.addEventListener('click', (e) => {
-                                    e.preventDefault();
-                                    showReportSection();
-                                });
+                            fetch(`/api/tickets/${id}/delete`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' }
+                            })
+                            .then(response => {
+                                if (response.ok) {
+                                    const ticket = document.querySelector(`[data-ticket-id="${id}"]`);
+                                    if (ticket) {
+                                        ticket.style.opacity = '0';
+                                        ticket.style.transform = 'translateY(-20px)';
+                                        setTimeout(() => {
+                                            ticket.remove();
+                                            if (!document.querySelector('.ticket-card')) {
+                                                location.reload();
+                                            }
+                                        }, 300);
+                                    }
+                                } else {
+                                    alert("Erreur lors de la suppression du ticket");
+                                }
+                            })
+                            .catch(err => {
+                                console.error(err);
+                                alert("Erreur lors de la suppression du ticket");
                             });
-                        });
+                        }
                     </script>
                 </body>
                 </html>
