@@ -6,7 +6,6 @@ const fs = require('fs');
 const fsPromises = require('fs').promises;
 const bodyParser = require('body-parser');
 const session = require('express-session');
-const Excel = require('exceljs');
 const { Op } = require('sequelize');
 
 
@@ -151,9 +150,10 @@ app.post('/api/tickets', requireLogin, async (req, res) => {
         const ticket = await Ticket.create({
             caller: req.body.caller,
             reason: req.body.reason || '',
-            tags,
+            tags: tags,
             status: 'open',
             isGLPI: req.body.isGLPI === 'true',
+            isBlocking: req.body.isBlocking === 'true',
             createdBy: req.session.username
         });
 
@@ -228,6 +228,7 @@ app.post('/api/tickets/:id/edit', requireLogin, async (req, res) => {
             reason: req.body.isGLPI === 'true' ? '' : (req.body.reason || ''),
             tags: req.body.isGLPI === 'true' ? [] : (req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : []),
             isGLPI: req.body.isGLPI === 'true',
+            isBlocking: req.body.isBlocking === 'true',
             lastModifiedBy: req.session.username,
             lastModifiedAt: new Date()
         };
@@ -404,57 +405,145 @@ app.get('/stats', async (req, res) => {
     }
 });
 
-// Export stats
-app.get('/api/stats/export', async (req, res) => {
+// Route pour afficher la page de rapport
+app.get('/report', async (req, res) => {
     try {
+        const defaultDate = new Date();
         const tickets = await Ticket.findAll({
+            include: [Message],
+            where: {
+                createdAt: {
+                    [Op.gte]: new Date(defaultDate.setHours(0, 0, 0, 0)),
+                    [Op.lte]: new Date(defaultDate.setHours(23, 59, 59, 999))
+                }
+            },
             order: [['createdAt', 'DESC']]
         });
-        const stats = await processStats(tickets);
-        
-        const workbook = new Excel.Workbook();
-        const period = req.query.period || 'day';
-        const periodData = stats[period];
 
-        // Feuille principale
-        const sheet = workbook.addWorksheet('Statistiques');
-        sheet.addRow(['Période', 'Total tickets', 'Tickets GLPI']);
-        periodData.labels.forEach((label, index) => {
-            sheet.addRow([
-                label,
-                periodData.data[index],
-                periodData.glpiData[index]
-            ]);
+        res.render('report', { 
+            tickets, 
+            username: 'Visiteur', // Valeur par défaut pour les visiteurs
+            currentDate: defaultDate
         });
-
-        // Tags
-        if (req.query.includeTags === 'true') {
-            const tagsSheet = workbook.addWorksheet('Tags');
-            tagsSheet.addRow(['Tag', 'Utilisations']);
-            stats.topTags.forEach(tag => {
-                tagsSheet.addRow([tag.name, tag.count]);
-            });
-        }
-
-        // Appelants
-        if (req.query.includeCallers === 'true') {
-            const callersSheet = workbook.addWorksheet('Appelants');
-            callersSheet.addRow(['Appelant', 'Tickets']);
-            stats.topCallers.forEach(caller => {
-                callersSheet.addRow([caller.name, caller.count]);
-            });
-        }
-
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=stats-tickets-${period}.xlsx`);
-
-        await workbook.xlsx.write(res);
-        res.end();
     } catch (error) {
-        console.error('Erreur export:', error);
-        res.status(500).send('Erreur export');
+        console.error('Erreur génération rapport:', error);
+        res.status(500).send('Erreur serveur');
     }
 });
+
+// Route API pour générer les données du rapport
+app.get('/api/report-data', async (req, res) => {
+    try {
+        const requestDate = req.query.date ? new Date(req.query.date) : new Date();
+        const startDate = new Date(requestDate);
+        startDate.setHours(0, 0, 0, 0);
+        const endDate = new Date(requestDate);
+        endDate.setHours(23, 59, 59, 999);
+
+        const tickets = await Ticket.findAll({
+            where: {
+                createdAt: {
+                    [Op.between]: [startDate, endDate]
+                }
+            }
+        });
+
+        if (tickets.length === 0) {
+            return res.json({
+                total: 0,
+                glpi: 0,
+                blocking: 0,
+                hourlyDistribution: Array(24).fill(0),
+                morningTickets: 0,
+                afternoonTickets: 0,
+                topCallers: {},
+                topTags: {}
+            });
+        }
+
+        const stats = {
+            total: tickets.length,
+            glpi: tickets.filter(t => t.isGLPI).length,
+            blocking: tickets.filter(t => t.isBlocking).length,
+            hourlyDistribution: Array(24).fill(0),
+            morningTickets: 0,
+            afternoonTickets: 0,
+            topCallers: {},
+            topTags: {}
+        };
+
+        tickets.forEach(ticket => {
+            const ticketDate = new Date(ticket.createdAt);
+            const hour = ticketDate.getHours();
+
+            stats.hourlyDistribution[hour]++;
+
+            if (hour < 12) stats.morningTickets++;
+            else stats.afternoonTickets++;
+
+            stats.topCallers[ticket.caller] = (stats.topCallers[ticket.caller] || 0) + 1;
+
+            if (ticket.tags && Array.isArray(ticket.tags)) {
+                ticket.tags.forEach(tag => {
+                    stats.topTags[tag] = (stats.topTags[tag] || 0) + 1;
+                });
+            }
+        });
+
+        res.json(stats);
+    } catch (error) {
+        console.error('Erreur complète:', error);
+        res.status(500).json({
+            error: 'Erreur serveur',
+            message: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+app.get('/api/report', async (req, res) => {
+    const date = new Date(req.query.date);
+    const stats = await getReportStats(date);
+    res.json(stats);
+  });
+  
+  async function getReportStats(date) {
+    // Statistiques quotidiennes
+    const dayStart = new Date(date);
+    dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23,59,59,999);
+  
+    const tickets = await Ticket.findAll({
+      where: {
+        createdAt: {
+          [Op.between]: [dayStart, dayEnd]
+        }
+      }
+    });
+  
+    // Calculer les ratios et tranches horaires
+    const morningTickets = tickets.filter(t => new Date(t.createdAt).getHours() < 12);
+    const afternoonTickets = tickets.filter(t => new Date(t.createdAt).getHours() >= 12);
+  
+    const hourlyDistribution = Array(24).fill(0);
+    tickets.forEach(t => {
+      const hour = new Date(t.createdAt).getHours();
+      hourlyDistribution[hour]++;
+    });
+  
+    return {
+      total: tickets.length,
+      glpi: tickets.filter(t => t.isGLPI).length,
+      blocking: tickets.filter(t => t.isBlocking).length,
+      morningRatio: morningTickets.length / tickets.length,
+      afternoonRatio: afternoonTickets.length / tickets.length,
+      hourlyDistribution,
+      topCallers: getTopCallers(tickets),
+      topTags: getTopTags(tickets),
+      charts: generateChartsSVG(tickets)
+    };
+  }
 
 // Delete saved field
 app.post('/api/saved-fields/delete', requireLogin, async (req, res) => {
@@ -476,20 +565,23 @@ app.post('/api/saved-fields/delete', requireLogin, async (req, res) => {
 // Fonction pour générer les statistiques
 async function processStats(tickets) {
     const now = new Date();
-    now.setHours(23, 59, 59, 999); // Fin de la journée courante
+    now.setHours(23, 59, 59, 999);
     
     const stats = {
-        day: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
-        week: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
-        month: { labels: [], data: [], glpiData: [], total: 0, glpi: 0 },
-        detailedData: []
+        day: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
+        week: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
+        month: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
+        detailedData: [],
+        topTags: [],
+        topCallers: []
     };
 
-    // Créer un map pour stocker les compteurs par date
+    // Create maps for daily counts
     const dailyCounts = new Map();
     const dailyGLPICounts = new Map();
+    const dailyBlockingCounts = new Map();
 
-    // Initialiser les 30 derniers jours avec des compteurs à 0
+    // Initialize last 30 days
     for (let i = 29; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
@@ -497,40 +589,59 @@ async function processStats(tickets) {
         const dateStr = date.toLocaleDateString('fr-FR');
         dailyCounts.set(dateStr, 0);
         dailyGLPICounts.set(dateStr, 0);
+        dailyBlockingCounts.set(dateStr, 0);
         stats.day.labels.push(dateStr);
     }
 
-    // Traiter chaque ticket
+    // Process each ticket
+    const tagStats = {};
+    const callerStats = {};
+
     tickets.forEach(ticket => {
         const ticketDate = new Date(ticket.createdAt);
         ticketDate.setHours(0, 0, 0, 0);
         const dateStr = ticketDate.toLocaleDateString('fr-FR');
 
-        // Ajouter aux données détaillées
         stats.detailedData.push({
             id: ticket.id,
             date: ticket.createdAt,
             caller: ticket.caller,
             tags: ticket.tags,
-            isGLPI: ticket.isGLPI
+            isGLPI: ticket.isGLPI,
+            isBlocking: ticket.isBlocking
         });
 
-        // Compter seulement si la date est dans notre période de 30 jours
         if (dailyCounts.has(dateStr)) {
             dailyCounts.set(dateStr, (dailyCounts.get(dateStr) || 0) + 1);
             if (ticket.isGLPI) {
                 dailyGLPICounts.set(dateStr, (dailyGLPICounts.get(dateStr) || 0) + 1);
             }
+            if (ticket.isBlocking) {
+                dailyBlockingCounts.set(dateStr, (dailyBlockingCounts.get(dateStr) || 0) + 1);
+            }
+        }
+
+        // Count tags
+        if (ticket.tags && Array.isArray(ticket.tags)) {
+            ticket.tags.forEach(tag => {
+                tagStats[tag] = (tagStats[tag] || 0) + 1;
+            });
+        }
+
+        // Count callers
+        if (ticket.caller) {
+            callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
         }
     });
 
-    // Remplir les tableaux de données
+    // Fill day data arrays
     stats.day.labels.forEach(dateStr => {
         stats.day.data.push(dailyCounts.get(dateStr) || 0);
         stats.day.glpiData.push(dailyGLPICounts.get(dateStr) || 0);
+        stats.day.blockingData.push(dailyBlockingCounts.get(dateStr) || 0);
     });
 
-    // Calculer les statistiques hebdomadaires
+    // Calculate weekly statistics
     const weekStart = new Date(now);
     weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1);
     weekStart.setHours(0, 0, 0, 0);
@@ -551,9 +662,10 @@ async function processStats(tickets) {
         
         stats.week.data.push(weekTickets.length);
         stats.week.glpiData.push(weekTickets.filter(t => t.isGLPI).length);
+        stats.week.blockingData.push(weekTickets.filter(t => t.isBlocking).length);
     }
 
-    // Calculer les statistiques mensuelles
+    // Calculate monthly statistics
     for (let i = 11; i >= 0; i--) {
         const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
@@ -568,13 +680,26 @@ async function processStats(tickets) {
         
         stats.month.data.push(monthTickets.length);
         stats.month.glpiData.push(monthTickets.filter(t => t.isGLPI).length);
+        stats.month.blockingData.push(monthTickets.filter(t => t.isBlocking).length);
     }
 
-    // Calculer les totaux
+    // Calculate totals
     ['day', 'week', 'month'].forEach(period => {
         stats[period].total = stats[period].data.reduce((a, b) => a + b, 0);
         stats[period].glpi = stats[period].glpiData.reduce((a, b) => a + b, 0);
+        stats[period].blocking = stats[period].blockingData.reduce((a, b) => a + b, 0);
     });
+
+    // Calculate top tags and callers
+    stats.topTags = Object.entries(tagStats)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    stats.topCallers = Object.entries(callerStats)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
 
     return stats;
 }
@@ -602,6 +727,50 @@ app.get('/admin/create-ticket', async (req, res) => {
         res.status(500).send('Erreur serveur');
     }
 });
+
+app.get('/api/report', async (req, res) => {
+    const date = new Date(req.query.date);
+    const stats = await getReportStats(date);
+    res.json(stats);
+  });
+  
+  async function getReportStats(date) {
+    // Statistiques quotidiennes
+    const dayStart = new Date(date);
+    dayStart.setHours(0,0,0,0);
+    const dayEnd = new Date(date);
+    dayEnd.setHours(23,59,59,999);
+
+    const tickets = await Ticket.findAll({
+        where: {
+            createdAt: {
+                [Op.between]: [dayStart, dayEnd]
+            }
+        }
+    });
+
+    // Calculer les ratios et tranches horaires
+    const morningTickets = tickets.filter(t => new Date(t.createdAt).getHours() < 12);
+    const afternoonTickets = tickets.filter(t => new Date(t.createdAt).getHours() >= 12);
+
+    const hourlyDistribution = Array(24).fill(0);
+    tickets.forEach(t => {
+        const hour = new Date(t.createdAt).getHours();
+        hourlyDistribution[hour]++;
+    });
+
+    return {
+        total: tickets.length,
+        glpi: tickets.filter(t => t.isGLPI).length,
+        blocking: tickets.filter(t => t.isBlocking).length,
+        morningRatio: morningTickets.length / tickets.length,
+        afternoonRatio: afternoonTickets.length / tickets.length,
+        hourlyDistribution,
+        topCallers: getTopCallers(tickets),
+        topTags: getTopTags(tickets),
+        charts: generateChartsSVG(tickets)
+    };
+}
 
 // Route pour traiter la création du ticket personnalisé (accessible à tous)
 app.post('/admin/create-ticket', async (req, res) => {
@@ -637,7 +806,7 @@ async function startServer() {
         await fsPromises.mkdir(UPLOADS_DIR, { recursive: true });
         console.log('✅ Dossier uploads vérifié');
 
-        const VERSION = '1.0.1';
+        const VERSION = '1.0.4';
         console.log(`🚀 Version du serveur : ${VERSION}`);
 
         app.listen(process.env.PORT, () => {
