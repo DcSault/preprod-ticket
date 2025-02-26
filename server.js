@@ -16,6 +16,15 @@ const app = express();
 const UPLOADS_DIR = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
 
 // Middleware Configuration
+app.use((req, res, next) => {
+    const path = req.path;
+    if (path.endsWith('.css')) {
+      res.type('text/css');
+    } else if (path.endsWith('.js')) {
+      res.type('application/javascript');
+    }
+    next();
+  });
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use('/uploads', express.static(process.env.UPLOAD_DIR));
