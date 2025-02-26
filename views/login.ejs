@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html class="dark:bg-gray-900">
+
 <head>
     <title>Login - CallFix</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     
     <!-- Initialisation du thème -->
     <script>
@@ -18,6 +20,70 @@
     </script>
 
     <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes shine {
+            from { background-position: -200% center; }
+            to { background-position: 200% center; }
+        }
+        
+        .page-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        .form-slide-up {
+            animation: slideInUp 0.6s ease-out;
+            animation-delay: 0.3s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+        
+        .btn-pulse:hover {
+            animation: pulse 1s infinite;
+        }
+        
+        .shine-effect {
+            position: relative;
+        }
+        
+        .shine-effect:after {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to right,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s linear infinite;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .shine-effect:hover:after {
+            opacity: 1;
+        }
+        
         .autocomplete-list {
             display: none;
             position: absolute;
@@ -29,6 +95,7 @@
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
+            animation: slideInUp 0.3s ease-out;
         }
 
         .dark .autocomplete-list {
@@ -45,6 +112,7 @@
             padding: 0.5rem 1rem;
             cursor: pointer;
             color: #1f2937;
+            transition: all 0.2s ease;
         }
 
         .dark .autocomplete-item {
@@ -53,6 +121,7 @@
 
         .autocomplete-item:hover {
             background-color: #f3f4f6;
+            transform: translateX(5px);
         }
 
         .dark .autocomplete-item:hover {
@@ -67,34 +136,84 @@
             background-color: #4b5563;
         }
 
-        /* Animation de transition pour le thème */
+        /* Transition du thème */
         * {
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.2s ease;
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .input-focus-effect:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        .link-hover-effect {
+            position: relative;
+        }
+        
+        .link-hover-effect::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: currentColor;
+            transition: width 0.3s ease;
+        }
+        
+        .link-hover-effect:hover::after {
+            width: 100%;
+        }
+        
+        /* Logo animation */
+        .logo-text {
+            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 5s ease infinite;
+        }
+        
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* SVG icon animations */
+        .svg-icon {
+            transition: transform 0.3s;
+        }
+        
+        .svg-container:hover .svg-icon {
+            transform: translateY(-3px) rotate(5deg);
         }
     </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
-    <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="min-h-screen flex items-center justify-center p-4 page-fade-in">
         <div class="max-w-md w-full">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md">
-                <h1 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">CallFix</h1>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow form-slide-up">
+                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white logo-text">CallFix</h1>
                 
                 <form action="/login" method="POST" class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
                         <div class="relative">
-                            <input type="text" 
-                                   name="username" 
-                                   required 
+                            <input type="text"
+                                   name="username"
+                                   required
                                    placeholder="Entrez votre nom"
-                                   class="w-full p-2 border rounded 
-                                          text-gray-900 dark:text-white 
-                                          bg-white dark:bg-gray-700 
-                                          border-gray-300 dark:border-gray-600 
-                                          focus:border-blue-500 dark:focus:border-blue-400 
+                                   class="w-full p-2 border rounded
+                                          text-gray-900 dark:text-white
+                                          bg-white dark:bg-gray-700
+                                          border-gray-300 dark:border-gray-600
+                                          focus:border-blue-500 dark:focus:border-blue-400
                                           focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
-                                          placeholder-gray-400 dark:placeholder-gray-500"
+                                          placeholder-gray-400 dark:placeholder-gray-500
+                                          input-focus-effect"
                                    list="usernames">
                             <datalist id="usernames">
                                 <% savedUsers.forEach(user => { %>
@@ -104,44 +223,45 @@
                         </div>
                     </div>
 
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full bg-blue-500 text-white px-4 py-2 rounded
-                                   hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 
-                                   dark:focus:ring-offset-gray-800 
-                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                                   hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                   dark:focus:ring-offset-gray-800
+                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]
+                                   btn-pulse shine-effect">
                         Se connecter
                     </button>
                 </form>
 
-                <div class="mt-4 flex justify-center space-x-4">
+                <div class="mt-6 flex justify-center space-x-6">
                     <!-- Lien "Voir les statistiques" -->
-                    <a href="/stats" 
-                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 
-                              flex items-center justify-center gap-2 group">
-                        <svg class="w-4 h-4 transition-transform group-hover:scale-110" 
-                             fill="none" 
-                             stroke="currentColor" 
+                    <a href="/stats"
+                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-5 h-5 svg-icon"
+                             fill="none"
+                             stroke="currentColor"
                              viewBox="0 0 24 24">
-                            <path stroke-linecap="round" 
-                                  stroke-linejoin="round" 
-                                  stroke-width="2" 
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
                                   d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                         <span>Voir les statistiques</span>
                     </a>
-                
+               
                     <!-- Bouton "Générer un Rapport" -->
-                    <a href="/report" 
-                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 
-                              flex items-center justify-center gap-2 group">
-                        <svg class="w-4 h-4 transition-transform group-hover:scale-110" 
-                             fill="none" 
-                             stroke="currentColor" 
+                    <a href="/report"
+                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-5 h-5 svg-icon"
+                             fill="none"
+                             stroke="currentColor"
                              viewBox="0 0 24 24">
-                            <path stroke-linecap="round" 
-                                  stroke-linejoin="round" 
-                                  stroke-width="2" 
+                            <path stroke-linecap="round"
+                                  stroke-linejoin="round"
+                                  stroke-width="2"
                                   d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <span>Générer un Rapport</span>
@@ -194,10 +314,20 @@
 
                 if (matchingItems.length) {
                     this.list.classList.add('show');
-                    matchingItems.forEach(item => {
+                    matchingItems.forEach((item, index) => {
                         const div = document.createElement('div');
                         div.classList.add('autocomplete-item');
-                        div.textContent = item;
+                        
+                        // Mettre en évidence la partie correspondante
+                        const regex = new RegExp(`(${value})`, 'gi');
+                        const highlightedText = item.replace(regex, '<b>$1</b>');
+                        div.innerHTML = highlightedText;
+                        
+                        // Ajouter un délai progressif pour l'animation
+                        div.style.animationDelay = `${index * 50}ms`;
+                        div.style.opacity = "0";
+                        div.style.animation = "slideInUp 0.3s ease-out forwards";
+                        
                         div.addEventListener('click', () => {
                             this.input.value = item;
                             this.list.classList.remove('show');
@@ -229,6 +359,8 @@
                 Array.from(items).forEach(item => item.classList.remove('selected'));
                 if (this.currentFocus > -1) {
                     items[this.currentFocus].classList.add('selected');
+                    // Assurer que l'élément sélectionné est visible
+                    items[this.currentFocus].scrollIntoView({block: 'nearest'});
                 }
             }
         }
@@ -243,6 +375,15 @@
                 if (this.value.toLowerCase() === 'admin') {
                     window.location.href = '/admin/create-ticket';
                 }
+            });
+
+            // Animation lors du focus sur l'input
+            usernameInput.addEventListener('focus', function() {
+                this.classList.add('animate__animated', 'animate__pulse');
+            });
+
+            usernameInput.addEventListener('blur', function() {
+                this.classList.remove('animate__animated', 'animate__pulse');
             });
         };
     </script>
