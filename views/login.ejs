@@ -23,6 +23,30 @@
             100% { transform: scale(1); }
         }
        
+        @keyframes logoPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .logo-pulse {
+            animation: logoPulse 3s infinite;
+            position: relative;
+        }
+
+        .logo-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.8) 50%, rgba(59, 130, 246, 0));
+            bottom: -4px;
+            left: 0;
+            transform: scaleX(0.8);
+            opacity: 0.7;
+            animation: logoPulse 3s infinite alternate;
+        }
+       
         .page-fade-in {
             animation: fadeIn 0.8s ease-out forwards;
         }
@@ -86,7 +110,7 @@
         html.dark .autocomplete-item.selected {
             background-color: #4b5563 !important;
         }
-        
+       
         /* Masquer la flèche du datalist natif */
         input::-webkit-calendar-picker-indicator {
             display: none !important;
@@ -119,22 +143,6 @@
        
         .link-hover-effect:hover::after {
             width: 100%;
-        }
-       
-        /* Logo animation */
-        .logo-text {
-            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientFlow 5s ease infinite;
-        }
-       
-        @keyframes gradientFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
         }
        
         /* SVG icon animations */
@@ -178,7 +186,7 @@
     <div class="min-h-screen flex items-center justify-center p-4">
         <div class="max-w-md w-full">
             <div class="bg-white p-8 rounded-lg shadow-md form-slide-up">
-                <h1 class="text-2xl font-bold mb-6 text-center text-gray-900 logo-text">CallFix</h1>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white logo-pulse mb-6 text-center">CallFix</h1>
                
                 <form action="/login" method="POST" class="space-y-4">
                     <div>
@@ -255,15 +263,15 @@
                         </svg>
                         <span>Version 1.0.9</span>
                     </div>
-                    
+                   
                     <div class="version-badge">
                         <svg class="w-4 h-4 mr-1 svg-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                         </svg>
                         <span>Développé par <span class="font-medium text-blue-500">Sault</span></span>
                     </div>
-                    
-                    <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" 
+                   
+                    <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer"
                        class="version-badge hover:text-blue-500 transition-colors duration-200">
                         <svg class="w-4 h-4 mr-1 svg-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -296,7 +304,7 @@
                 this.input.addEventListener('input', () => this.updateList());
                 this.input.addEventListener('focus', () => this.updateList());
                 this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
-                
+               
                 // Fermer la liste quand on clique ailleurs
                 document.addEventListener('click', (e) => {
                     if (!this.input.contains(e.target) && !this.list.contains(e.target)) {
@@ -339,7 +347,7 @@
             addItemToList(item) {
                 const div = document.createElement('div');
                 div.classList.add('autocomplete-item');
-                
+               
                 // Mettre en surbrillance la partie correspondante
                 const value = this.input.value.toLowerCase();
                 if (value && item.toLowerCase().includes(value)) {
@@ -347,26 +355,26 @@
                     const before = item.substring(0, index);
                     const match = item.substring(index, index + value.length);
                     const after = item.substring(index + value.length);
-                    
-                    div.innerHTML = before + 
-                                   '<strong>' + match + '</strong>' + 
+                   
+                    div.innerHTML = before +
+                                   '<strong>' + match + '</strong>' +
                                    after;
                 } else {
                     div.textContent = item;
                 }
-                
+               
                 div.addEventListener('click', () => {
                     this.input.value = item;
                     this.list.classList.remove('show');
-                    
+                   
                     // Vérification pour redirection admin
                     if (item.toLowerCase() === 'admin') {
                         window.location.href = '/admin/create-ticket';
                     }
                 });
-                
+               
                 this.list.appendChild(div);
-                
+               
                 // Appliquer les styles basés sur le thème actuel
                 if (document.documentElement.classList.contains('dark')) {
                     div.style.color = '#f3f4f6';
@@ -400,10 +408,10 @@
                 Array.from(items).forEach(item => item.classList.remove('selected'));
                 if (this.currentFocus > -1) {
                     items[this.currentFocus].classList.add('selected');
-                    
+                   
                     // Assurer que l'élément sélectionné est visible dans la liste déroulante
                     items[this.currentFocus].scrollIntoView({
-                        behavior: 'smooth', 
+                        behavior: 'smooth',
                         block: 'nearest'
                     });
                 }
