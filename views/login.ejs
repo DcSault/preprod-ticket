@@ -1,12 +1,40 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-    <title>CallFix</title>
+    <title>Login - CallFix</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+   
     <style>
-        /* Styles pour l'autocomplétion */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+       
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+       
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+       
+        .page-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+       
+        .form-slide-up {
+            animation: slideInUp 0.6s ease-out;
+            animation-delay: 0.3s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+       
+        /* Styles autocompletion - version compatible */
         .autocomplete-list {
             display: none;
             position: absolute;
@@ -18,697 +46,379 @@
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
+            animation: slideInUp 0.3s ease-out;
         }
-       
-        .dark .autocomplete-list {
-            background: #1f2937;
-            border-color: #374151;
+
+        html.dark .autocomplete-list {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+            color: white !important;
         }
-       
-        .autocomplete-list.show { display: block; }
-       
+
+        .autocomplete-list.show {
+            display: block;
+        }
+
         .autocomplete-item {
             padding: 0.5rem 1rem;
             cursor: pointer;
+            color: #1f2937;
+            transition: all 0.2s ease;
         }
-       
+
+        html.dark .autocomplete-item {
+            color: #f3f4f6 !important;
+        }
+
         .autocomplete-item:hover {
             background-color: #f3f4f6;
+            transform: translateX(5px);
         }
-       
-        .dark .autocomplete-item:hover {
-            background-color: #374151;
+
+        html.dark .autocomplete-item:hover {
+            background-color: #374151 !important;
         }
-       
+
         .autocomplete-item.selected {
             background-color: #e5e7eb;
         }
-       
-        .dark .autocomplete-item.selected {
-            background-color: #4b5563;
+
+        html.dark .autocomplete-item.selected {
+            background-color: #4b5563 !important;
         }
-       
-        /* Transitions de base */
+        
+        /* Masquer la flèche du datalist natif */
+        input::-webkit-calendar-picker-indicator {
+            display: none !important;
+        }
+
+        /* Transition du thème - compatible avec ThemeManager */
         * {
-            transition: background-color 0.3s ease,
-                        border-color 0.3s ease,
-                        color 0.2s ease,
-                        transform 0.2s ease,
-                        box-shadow 0.2s ease;
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        /* Animations et améliorations de l'UI */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideInRight {
-            from { transform: translateX(20px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes buttonGlow {
-            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-        
-        /* Animation du logo CallFix */
-        .logo-pulse {
-            animation: pulse 3s infinite;
-            position: relative;
-        }
-        
-        .logo-pulse::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.8) 50%, rgba(59, 130, 246, 0));
-            bottom: -4px;
-            left: 0;
-            transform-origin: bottom;
-            transform: scaleX(0.8);
-            opacity: 0.7;
-            animation: pulse 3s infinite alternate;
-        }
-        
-        /* Animations des liens de navigation */
-        .nav-link {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: currentColor;
-            transform: scaleX(0);
-            transform-origin: right;
-            transition: transform 0.3s ease;
-        }
-        
-        .nav-link:hover::after {
-            transform: scaleX(1);
-            transform-origin: left;
-        }
-        
-        /* Améliorations des tickets */
-        .ticket-card {
-            transition: all 0.3s ease;
-            border-left: 4px solid #e5e7eb;
-            animation: fadeIn 0.5s ease-out forwards;
-        }
-        
-        .ticket-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        
-        .ticket-card.blocking {
-            border-left-color: #ef4444;
-            animation: pulse 2s infinite;
-        }
-        
-        .ticket-card.glpi {
-            border-left-color: #8b5cf6;
-        }
-        
-        /* Animation pour les boutons */
-        .btn {
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 5px;
-            height: 5px;
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 0;
-            border-radius: 100%;
-            transform: scale(1, 1) translate(-50%);
-            transform-origin: 50% 50%;
-        }
-        
-        .btn:hover::after {
-            animation: ripple 1s ease-out;
-        }
-        
-        @keyframes ripple {
-            0% {
-                transform: scale(0, 0);
-                opacity: 0.5;
-            }
-            100% {
-                transform: scale(20, 20);
-                opacity: 0;
-            }
-        }
-        
-        /* Animation pour le bouton "Créer l'Appel" */
-        .create-btn {
-            animation: buttonGlow 3s infinite;
-        }
-        
-        /* Amélioration des inputs et des listes déroulantes */
-        input, select, textarea {
-            transition: all 0.3s ease;
-        }
-        
-        input:focus, select:focus, textarea:focus {
-            transform: scale(1.01);
+       
+        .input-focus-effect:focus {
+            transform: scale(1.02);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-        
-        /* Animation pour l'apparition des tickets */
-        .tickets-container {
-            perspective: 1000px;
+       
+        .link-hover-effect {
+            position: relative;
         }
-        
-        .tickets-container > div {
-            animation: slideInRight 0.5s ease-out forwards;
-            animation-fill-mode: both;
-            opacity: 0;
+       
+        .link-hover-effect::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: currentColor;
+            transition: width 0.3s ease;
         }
-        
-        .tickets-container > div:nth-child(1) { animation-delay: 0.1s; }
-        .tickets-container > div:nth-child(2) { animation-delay: 0.2s; }
-        .tickets-container > div:nth-child(3) { animation-delay: 0.3s; }
-        .tickets-container > div:nth-child(4) { animation-delay: 0.4s; }
-        .tickets-container > div:nth-child(5) { animation-delay: 0.5s; }
-        
-        /* Amélioration du mode sombre */
-        .dark .ticket-card {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+       
+        .link-hover-effect:hover::after {
+            width: 100%;
         }
-        
-        .dark .btn::after {
-            background: rgba(255, 255, 255, 0.2);
+       
+        /* Logo animation */
+        .logo-text {
+            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 5s ease infinite;
         }
-        
-        /* Effet de survol pour les boutons d'action */
-        .action-btn {
-            transition: all 0.3s ease;
+       
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        .action-btn:hover {
+       
+        /* SVG icon animations */
+        .svg-icon {
+            transition: transform 0.3s;
+        }
+       
+        .svg-container:hover .svg-icon {
+            transform: translateY(-3px) rotate(5deg);
+        }
+       
+        /* Animation des badges de version */
+        .version-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, color 0.3s ease;
+            margin-right: 12px;
+        }
+       
+        .version-badge:hover {
             transform: translateY(-2px);
+            color: #3b82f6;
         }
-        
-        .action-btn:active {
-            transform: translateY(1px);
+       
+        html.dark .version-badge:hover {
+            color: #60a5fa !important;
         }
-        
-        /* Variables CSS pour le thème personnalisé */
-        :root {
-            --color-primary: #3b82f6;
-            --color-secondary: #60a5fa;
-            --color-accent: #93c5fd;
-            --color-background: #ffffff;
-            --color-text-accent: #3b82f6;
-        }
-        
-        .dark {
-            --color-background: #1f2937;
-            --color-text-accent: #60a5fa;
+       
+        /* Animation de la section développeur */
+        .developer-section {
+            animation: fadeIn 0.8s ease-out;
+            animation-delay: 0.6s;
+            opacity: 0;
+            animation-fill-mode: forwards;
         }
     </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header amélioré avec bouton "Générer un Rapport" -->
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white transition-transform hover:scale-105 cursor-default logo-pulse">CallFix</h1>
-            <div class="flex items-center gap-4">
-                <a href="/archives" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                    </svg>
-                    <span>Archives</span>
-                </a>
-                
-                <!-- Nouveau Bouton "Générer un Rapport" -->
-                <a href="/report" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    <span>Générer un Rapport</span>
-                </a>
-                
-                <a href="/stats" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
-                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span>Statistiques</span>
-                </a>
-                
-                <div class="user-info relative group ml-4 px-3 py-2 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center transition-all duration-300 hover:shadow-md hover:bg-white dark:hover:bg-gray-700">
-                    <span class="text-gray-600 dark:text-gray-400 mr-2">
-                        <span class="hidden md:inline">Connecté en tant que:</span> 
-                        <strong class="dark:text-white font-medium"><%= username %></strong>
-                    </span>
-                    <a href="/logout" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 p-2 rounded shadow-lg">
-                        Déconnexion
+<body class="bg-gray-100 min-h-screen page-fade-in">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full">
+            <div class="bg-white p-8 rounded-lg shadow-md form-slide-up">
+                <h1 class="text-2xl font-bold mb-6 text-center text-gray-900 logo-text">CallFix</h1>
+               
+                <form action="/login" method="POST" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1 text-gray-700">Votre nom</label>
+                        <div class="relative">
+                            <input type="text"
+                                   name="username"
+                                   required
+                                   placeholder="Entrez votre nom"
+                                   class="w-full p-2 border rounded
+                                          text-gray-900
+                                          bg-white
+                                          border-gray-300
+                                          focus:border-blue-500
+                                          focus:ring-1 focus:ring-blue-500
+                                          placeholder-gray-400
+                                          input-focus-effect"
+                                   autocomplete="off">
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-blue-500 text-white px-4 py-2 rounded
+                                   hover:bg-blue-600
+                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]">
+                        Se connecter
+                    </button>
+                </form>
+
+                <div class="mt-4 flex justify-center space-x-4">
+                    <!-- Lien "Voir les statistiques" -->
+                    <a href="/stats"
+                       class="text-blue-500 hover:text-blue-700
+                              flex items-center justify-center gap-2 group link-hover-effect">
+                        <div class="svg-container">
+                            <svg class="w-4 h-4 svg-icon"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <span>Voir les statistiques</span>
+                    </a>
+               
+                    <!-- Bouton "Générer un Rapport" -->
+                    <a href="/report"
+                       class="text-blue-500 hover:text-blue-700
+                              flex items-center justify-center gap-2 group link-hover-effect">
+                        <div class="svg-container">
+                            <svg class="w-4 h-4 svg-icon"
+                                 fill="none"
+                                 stroke="currentColor"
+                                 viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <span>Générer un Rapport</span>
+                    </a>
+                </div>
+
+                <!-- Section développeur avec version, nom et GitHub -->
+                <div class="mt-6 pt-4 border-t border-gray-200 text-gray-600 text-xs flex flex-wrap justify-center items-center gap-4 developer-section">
+                    <div class="version-badge">
+                        <svg class="w-4 h-4 mr-1 svg-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zm7-10a1 1 0 01.707.293l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 8l-3.293-3.293A1 1 0 0112 4z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Version 1.0.9</span>
+                    </div>
+                    
+                    <div class="version-badge">
+                        <svg class="w-4 h-4 mr-1 svg-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Développé par <span class="font-medium text-blue-500">Sault</span></span>
+                    </div>
+                    
+                    <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" 
+                       class="version-badge hover:text-blue-500 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-1 svg-icon" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        <span>GitHub</span>
                     </a>
                 </div>
             </div>
         </div>
-        
-        <!-- New Ticket Form avec animations -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 transform transition-all hover:shadow-lg">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white flex items-center">
-                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                Nouvel Appel
-            </h2>
-            <form action="/api/tickets" method="POST" class="space-y-4">
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="flex items-center gap-2 transition-all duration-300 hover:transform hover:scale-105">
-                        <input type="checkbox"
-                               id="isGLPI"
-                               name="isGLPI"
-                               value="true"
-                               class="rounded transition-all duration-300"
-                               onchange="toggleGLPIFields(this)">
-                        <label for="isGLPI" class="text-gray-700 dark:text-gray-300">Ticket GLPI</label>
-                    </div>
-                    <div class="flex items-center gap-2 transition-all duration-300 hover:transform hover:scale-105">
-                        <input type="checkbox"
-                               id="isBlocking"
-                               name="isBlocking"
-                               value="true"
-                               class="rounded">
-                        <label for="isBlocking" class="text-red-600 dark:text-red-400 font-medium">
-                            Bloquant
-                        </label>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Appelant</label>
-                    <div class="relative">
-                        <input type="text"
-                               name="caller"
-                               required
-                               list="callers"
-                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500">
-                        <datalist id="callers">
-                            <% savedFields.callers.forEach(caller => { %>
-                                <option value="<%= caller %>">
-                            <% }) %>
-                        </datalist>
-                    </div>
-                </div>
-
-                <div class="non-glpi-field">
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Raison</label>
-                    <div class="relative">
-                        <input type="text"
-                               name="reason"
-                               list="reasons"
-                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500">
-                        <datalist id="reasons">
-                            <% savedFields.reasons.forEach(reason => { %>
-                                <option value="<%= reason %>">
-                            <% }) %>
-                        </datalist>
-                    </div>
-                </div>
-
-                <div class="non-glpi-field">
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Tags</label>
-                    <input type="text"
-                           name="tags"
-                           placeholder="Séparez les tags par des virgules"
-                           class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500"
-                           list="tags">
-                    <datalist id="tags">
-                       <% savedFields.tags.forEach(tag => { %>
-                          <option value="<%= tag %>">
-                       <% }) %>
-                    </datalist>
-                </div>
-
-                <button type="submit"
-                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-300 create-btn flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    <span>Créer l'Appel</span>
-                </button>
-            </form>
-            
-            <!-- Section pour les champs mémorisés -->
-            <div class="mt-8">
-                <button onclick="toggleSavedFields()" 
-                        class="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-300">
-                    <svg id="savedFieldsIcon" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                    <span id="savedFieldsButtonText">Afficher les champs mémorisés</span>
-                </button>
-                
-                <div id="savedFieldsSection" class="hidden space-y-6 opacity-0 transform -translate-y-4 transition-all duration-300">
-                    <!-- Appelants -->
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Appelants mémorisés</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <% savedFields.callers.forEach(caller => { %>
-                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
-                                    <span class="text-gray-800 dark:text-gray-200"><%= caller %></span>
-                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                        <input type="hidden" name="field" value="caller">
-                                        <input type="hidden" name="value" value="<%= caller %>">
-                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
-                                    </form>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
-                    
-                    <!-- Raisons -->
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Raisons mémorisées</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <% savedFields.reasons.forEach(reason => { %>
-                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
-                                    <span class="text-gray-800 dark:text-gray-200"><%= reason %></span>
-                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                        <input type="hidden" name="field" value="reason">
-                                        <input type="hidden" name="value" value="<%= reason %>">
-                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
-                                    </form>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
-                    
-                    <!-- Tags -->
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Tags mémorisés</h4>
-                        <div class="flex flex-wrap gap-2">
-                            <% savedFields.tags.forEach(tag => { %>
-                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
-                                    <span class="text-gray-800 dark:text-gray-200"><%= tag %></span>
-                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                        <input type="hidden" name="field" value="tag">
-                                        <input type="hidden" name="value" value="<%= tag %>">
-                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
-                                    </form>
-                                </div>
-                            <% }) %>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Tickets List avec animations -->
-        <div class="space-y-4 tickets-container">
-            <% tickets.forEach((ticket, index) => { %>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md ticket-card <%= ticket.isBlocking ? 'blocking' : '' %> <%= ticket.isGLPI ? 'glpi' : '' %>" 
-                     data-ticket-id="<%= ticket.id %>"
-                     style="animation-delay: <%= 0.1 * (index + 1) %>s">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <h3 class="font-semibold text-gray-900 dark:text-white"><%= ticket.caller %></h3>
-                                <% if (ticket.isGLPI) { %>
-                                    <span class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs px-2 py-1 rounded-full">GLPI</span>
-                                <% } %>
-                                <% if (ticket.isBlocking) { %>
-                                    <span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs px-2 py-1 rounded-full">Bloquant</span>
-                                <% } %>
-                            </div>
-                            <% if (!ticket.isGLPI) { %>
-                                <p class="text-gray-600 dark:text-gray-400 mt-1"><%= ticket.reason %></p>
-                                <div class="flex flex-wrap gap-2 mt-2">
-                                    <% ticket.tags.forEach(tag => { %>
-                                        <span class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-full text-sm transition-all hover:bg-gray-300 dark:hover:bg-gray-600">
-                                            <%= tag %>
-                                        </span>
-                                    <% }) %>
-                                </div>
-                            <% } %>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                                Créé le <%= new Date(ticket.createdAt).toLocaleString('fr-FR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                }) %>
-                                par <%= ticket.createdBy %>
-                                <% if (ticket.lastModifiedBy) { %>
-                                    <br>Modifié le <%= new Date(ticket.lastModifiedAt).toLocaleString('fr-FR', {
-                                        year: 'numeric',
-                                        month: 'long',
-                                        day: 'numeric',
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                    }) %>
-                                    par <%= ticket.lastModifiedBy %>
-                                <% } %>
-                            </p>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="archiveTicket('<%= ticket.id %>')"
-                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 whitespace-nowrap btn action-btn">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                                    </svg>
-                                    Archiver
-                                </span>
-                            </button>
-                            <% if (!ticket.isGLPI) { %>
-                                <a href="/ticket/<%= ticket.id %>"
-                                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 btn action-btn">
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Détails
-                                    </span>
-                                </a>
-                            <% } %>
-                            <a href="/ticket/<%= ticket.id %>/edit"
-                               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 btn action-btn">
-                                <span class="flex items-center gap-1">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                    </svg>
-                                    Modifier
-                                </span>
-                            </a>
-                            <form action="/api/tickets/<%= ticket.id %>/delete" method="POST"
-                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?')">
-                                <button type="submit"
-                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 btn action-btn">
-                                    <span class="flex items-center gap-1">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        Supprimer
-                                    </span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            <% }) %>
-
-            <!-- Afficher un message si aucun ticket -->
-            <% if (tickets.length === 0) { %>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
-                    <p class="text-gray-600 dark:text-gray-300">Aucun appel en cours. Créez un nouvel appel pour commencer.</p>
-                </div>
-            <% } %>
-        </div>
     </div>
 
-    <!-- Bouton de thème avec animation -->
-    <button id="theme-toggle" 
-            class="fixed bottom-4 right-4 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl focus:outline-none z-10">
-        <!-- Icône soleil pour le mode sombre -->
-        <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        <!-- Icône lune pour le mode clair -->
-        <svg id="moon-icon" class="w-6 h-6 text-gray-700 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-        </svg>
-    </button>
-
-    <!-- Feedback pour le thème -->
-    <div id="theme-feedback" class="fixed top-4 right-4 bg-white dark:bg-gray-800 py-2 px-4 rounded-md shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none z-50">
-        <span id="theme-message" class="text-gray-900 dark:text-white"></span>
-    </div>
-
+    <!-- Script de l'autocomplétion améliorée -->
     <script>
-        // Gestionnaire de thème amélioré
-        class ThemeManager {
-            constructor() {
-                this.themeToggle = document.getElementById('theme-toggle');
-                this.prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                this.init();
+        // Classe d'autocomplétion améliorée compatible avec ThemeManager
+        class Autocomplete {
+            constructor(input, items) {
+                this.input = input;
+                this.items = items;
+                this.currentFocus = -1;
+                this.setup();
             }
 
-            init() {
-                // Charger le thème depuis localStorage ou utiliser la préférence système
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'dark' || (savedTheme === null && this.prefersDarkMode)) {
-                    document.documentElement.classList.add('dark');
-                    this.showThemeFeedback('Mode sombre activé');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    this.showThemeFeedback('Mode clair activé');
-                }
+            setup() {
+                // Création de la liste d'autocomplétion
+                this.list = document.createElement('div');
+                this.list.classList.add('autocomplete-list');
+                this.input.parentNode.appendChild(this.list);
 
-                // Ajouter l'écouteur d'événement au bouton de thème
-                if (this.themeToggle) {
-                    this.themeToggle.addEventListener('click', () => this.toggleTheme());
-                }
-            }
-
-            toggleTheme() {
-                if (document.documentElement.classList.contains('dark')) {
-                    document.documentElement.classList.remove('dark');
-                    localStorage.setItem('theme', 'light');
-                    this.showThemeFeedback('Mode clair activé');
-                } else {
-                    document.documentElement.classList.add('dark');
-                    localStorage.setItem('theme', 'dark');
-                    this.showThemeFeedback('Mode sombre activé');
-                }
-            }
-
-            showThemeFeedback(message) {
-                const feedback = document.getElementById('theme-feedback');
-                const messageEl = document.getElementById('theme-message');
+                // Ajout des écouteurs d'événements
+                this.input.addEventListener('input', () => this.updateList());
+                this.input.addEventListener('focus', () => this.updateList());
+                this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
                 
-                if (feedback && messageEl) {
-                    messageEl.textContent = message;
-                    feedback.classList.remove('opacity-0');
-                    
-                    setTimeout(() => {
-                        feedback.classList.add('opacity-0');
-                    }, 2000);
-                }
-            }
-        }
-
-        // Afficher/masquer les champs mémorisés
-        function toggleSavedFields() {
-            const section = document.getElementById('savedFieldsSection');
-            const icon = document.getElementById('savedFieldsIcon');
-            const buttonText = document.getElementById('savedFieldsButtonText');
-            
-            if (section.classList.contains('hidden')) {
-                section.classList.remove('hidden');
-                setTimeout(() => {
-                    section.classList.remove('opacity-0', '-translate-y-4');
-                }, 10);
-                icon.style.transform = 'rotate(180deg)';
-                buttonText.textContent = 'Masquer les champs mémorisés';
-            } else {
-                section.classList.add('opacity-0', '-translate-y-4');
-                setTimeout(() => {
-                    section.classList.add('hidden');
-                }, 300);
-                icon.style.transform = 'rotate(0)';
-                buttonText.textContent = 'Afficher les champs mémorisés';
-            }
-        }
-
-        // Activer/désactiver les champs spécifiques aux tickets non-GLPI
-        function toggleGLPIFields(checkbox) {
-            const nonGlpiFields = document.querySelectorAll('.non-glpi-field');
-            nonGlpiFields.forEach(field => {
-                if (checkbox.checked) {
-                    field.style.opacity = '0.5';
-                    field.style.pointerEvents = 'none';
-                    const inputs = field.querySelectorAll('input');
-                    inputs.forEach(input => {
-                        input.removeAttribute('required');
-                    });
-                } else {
-                    field.style.opacity = '1';
-                    field.style.pointerEvents = 'auto';
-                    const reasonInput = document.querySelector('input[name="reason"]');
-                    if (reasonInput) {
-                        reasonInput.setAttribute('required', '');
+                // Fermer la liste quand on clique ailleurs
+                document.addEventListener('click', (e) => {
+                    if (!this.input.contains(e.target) && !this.list.contains(e.target)) {
+                        this.list.classList.remove('show');
                     }
-                }
-            });
-        }
-
-        // Archiver un ticket
-        function archiveTicket(ticketId) {
-            if (confirm('Êtes-vous sûr de vouloir archiver ce ticket ?')) {
-                fetch(`/api/tickets/${ticketId}/archive`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        const ticketElement = document.querySelector(`[data-ticket-id="${ticketId}"]`);
-                        if (ticketElement) {
-                            ticketElement.style.opacity = '0';
-                            ticketElement.style.transform = 'translateX(100px)';
-                            setTimeout(() => {
-                                ticketElement.remove();
-                                if (document.querySelectorAll('.ticket-card').length === 0) {
-                                    location.reload();
-                                }
-                            }, 500);
-                        }
-                    } else {
-                        alert('Une erreur est survenue lors de l\'archivage du ticket.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Erreur:', error);
-                    alert('Une erreur est survenue lors de l\'archivage du ticket.');
                 });
             }
+
+            updateList() {
+                const value = this.input.value.toLowerCase();
+                this.currentFocus = -1;
+                this.list.innerHTML = '';
+
+                // Afficher toutes les suggestions si le champ est vide
+                if (!value) {
+                    // Optionnel : afficher toutes les options ou masquer la liste
+                    if (this.items.length > 0) {
+                        this.list.classList.add('show');
+                        this.items.forEach(item => this.addItemToList(item));
+                    } else {
+                        this.list.classList.remove('show');
+                    }
+                    return;
+                }
+
+                // Filtrer les éléments correspondants
+                const matchingItems = this.items.filter(item =>
+                    item.toLowerCase().includes(value)
+                );
+
+                // Afficher les éléments filtrés
+                if (matchingItems.length) {
+                    this.list.classList.add('show');
+                    matchingItems.forEach(item => this.addItemToList(item));
+                } else {
+                    this.list.classList.remove('show');
+                }
+            }
+
+            addItemToList(item) {
+                const div = document.createElement('div');
+                div.classList.add('autocomplete-item');
+                
+                // Mettre en surbrillance la partie correspondante
+                const value = this.input.value.toLowerCase();
+                if (value && item.toLowerCase().includes(value)) {
+                    const index = item.toLowerCase().indexOf(value);
+                    const before = item.substring(0, index);
+                    const match = item.substring(index, index + value.length);
+                    const after = item.substring(index + value.length);
+                    
+                    div.innerHTML = before + 
+                                   '<strong>' + match + '</strong>' + 
+                                   after;
+                } else {
+                    div.textContent = item;
+                }
+                
+                div.addEventListener('click', () => {
+                    this.input.value = item;
+                    this.list.classList.remove('show');
+                    
+                    // Vérification pour redirection admin
+                    if (item.toLowerCase() === 'admin') {
+                        window.location.href = '/admin/create-ticket';
+                    }
+                });
+                
+                this.list.appendChild(div);
+                
+                // Appliquer les styles basés sur le thème actuel
+                if (document.documentElement.classList.contains('dark')) {
+                    div.style.color = '#f3f4f6';
+                }
+            }
+
+            handleKeydown(e) {
+                const items = this.list.getElementsByTagName('div');
+                if (!items.length) return;
+
+                if (e.key === 'ArrowDown') {
+                    this.currentFocus++;
+                    if (this.currentFocus >= items.length) this.currentFocus = 0;
+                    this.setActive(items);
+                    e.preventDefault(); // Empêcher le défilement de la page
+                } else if (e.key === 'ArrowUp') {
+                    this.currentFocus--;
+                    if (this.currentFocus < 0) this.currentFocus = items.length - 1;
+                    this.setActive(items);
+                    e.preventDefault(); // Empêcher le défilement de la page
+                } else if (e.key === 'Enter' && this.currentFocus > -1) {
+                    e.preventDefault();
+                    items[this.currentFocus].click();
+                } else if (e.key === 'Escape') {
+                    this.list.classList.remove('show');
+                    e.preventDefault();
+                }
+            }
+
+            setActive(items) {
+                Array.from(items).forEach(item => item.classList.remove('selected'));
+                if (this.currentFocus > -1) {
+                    items[this.currentFocus].classList.add('selected');
+                    
+                    // Assurer que l'élément sélectionné est visible dans la liste déroulante
+                    items[this.currentFocus].scrollIntoView({
+                        behavior: 'smooth', 
+                        block: 'nearest'
+                    });
+                }
+            }
         }
 
-        // Initialiser le gestionnaire de thème
-        document.addEventListener('DOMContentLoaded', () => {
-            new ThemeManager();
-        });
+        // Initialisation au chargement de la page
+        window.onload = function() {
+            const usernameInput = document.querySelector('input[name="username"]');
+            // Utiliser les données du serveur
+            new Autocomplete(usernameInput, <%- JSON.stringify(savedUsers) %>);
+        };
     </script>
+
+    <!-- Importer le gestionnaire de thème externe -->
+    <script src="/js/themeManager.js"></script>
 </body>
 </html>

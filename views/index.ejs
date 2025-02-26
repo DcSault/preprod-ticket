@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html class="dark:bg-gray-900">
+<html lang="fr">
 <head>
     <title>CallFix</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
+        /* Styles pour l'autocomplétion */
         .autocomplete-list {
             display: none;
             position: absolute;
@@ -18,87 +19,305 @@
             overflow-y: auto;
             z-index: 1000;
         }
-        
+       
         .dark .autocomplete-list {
             background: #1f2937;
             border-color: #374151;
         }
-        
+       
         .autocomplete-list.show { display: block; }
-        
+       
         .autocomplete-item {
             padding: 0.5rem 1rem;
             cursor: pointer;
         }
-        
+       
         .autocomplete-item:hover {
             background-color: #f3f4f6;
         }
-        
+       
         .dark .autocomplete-item:hover {
             background-color: #374151;
         }
-        
+       
         .autocomplete-item.selected {
             background-color: #e5e7eb;
         }
-        
+       
         .dark .autocomplete-item.selected {
             background-color: #4b5563;
         }
-        
+       
+        /* Transitions de base */
         * {
             transition: background-color 0.3s ease,
                         border-color 0.3s ease,
-                        color 0.2s ease;
+                        color 0.2s ease,
+                        transform 0.2s ease,
+                        box-shadow 0.2s ease;
+        }
+        
+        /* Animations et améliorations de l'UI */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes buttonGlow {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        /* Animation du logo CallFix */
+        .logo-pulse {
+            animation: pulse 3s infinite;
+            position: relative;
+        }
+        
+        .logo-pulse::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0), rgba(59, 130, 246, 0.8) 50%, rgba(59, 130, 246, 0));
+            bottom: -4px;
+            left: 0;
+            transform-origin: bottom;
+            transform: scaleX(0.8);
+            opacity: 0.7;
+            animation: pulse 3s infinite alternate;
+        }
+        
+        /* Animations des liens de navigation */
+        .nav-link {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: currentColor;
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+        
+        /* Améliorations des tickets */
+        .ticket-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid #e5e7eb;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        .ticket-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .ticket-card.blocking {
+            border-left-color: #ef4444;
+            animation: pulse 2s infinite;
+        }
+        
+        .ticket-card.glpi {
+            border-left-color: #8b5cf6;
+        }
+        
+        /* Animation pour les boutons */
+        .btn {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+        
+        .btn:hover::after {
+            animation: ripple 1s ease-out;
+        }
+        
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+        
+        /* Animation pour le bouton "Créer l'Appel" */
+        .create-btn {
+            animation: buttonGlow 3s infinite;
+        }
+        
+        /* Amélioration des inputs et des listes déroulantes */
+        input, select, textarea {
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            transform: scale(1.01);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* Animation pour l'apparition des tickets */
+        .tickets-container {
+            perspective: 1000px;
+        }
+        
+        .tickets-container > div {
+            animation: slideInRight 0.5s ease-out forwards;
+            animation-fill-mode: both;
+            opacity: 0;
+        }
+        
+        .tickets-container > div:nth-child(1) { animation-delay: 0.1s; }
+        .tickets-container > div:nth-child(2) { animation-delay: 0.2s; }
+        .tickets-container > div:nth-child(3) { animation-delay: 0.3s; }
+        .tickets-container > div:nth-child(4) { animation-delay: 0.4s; }
+        .tickets-container > div:nth-child(5) { animation-delay: 0.5s; }
+        
+        /* Amélioration du mode sombre */
+        .dark .ticket-card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dark .btn::after {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Effet de survol pour les boutons d'action */
+        .action-btn {
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .action-btn:active {
+            transform: translateY(1px);
+        }
+        
+        /* Variables CSS pour le thème personnalisé */
+        :root {
+            --color-primary: #3b82f6;
+            --color-secondary: #60a5fa;
+            --color-accent: #93c5fd;
+            --color-background: #ffffff;
+            --color-text-accent: #3b82f6;
+        }
+        
+        .dark {
+            --color-background: #1f2937;
+            --color-text-accent: #60a5fa;
         }
     </style>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900">
     <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
+        <!-- Header amélioré avec bouton "Générer un Rapport" -->
         <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">CallFix</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white transition-transform hover:scale-105 cursor-default logo-pulse">CallFix</h1>
             <div class="flex items-center gap-4">
-                <a href="/archives" class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <a href="/archives" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                     </svg>
-                    Archives
+                    <span>Archives</span>
                 </a>
-                <a href="/stats" class="text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                
+                <!-- Nouveau Bouton "Générer un Rapport" -->
+                <a href="/report" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Générer un Rapport</span>
+                </a>
+                
+                <a href="/stats" class="nav-link text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <svg class="w-5 h-5 transform transition-transform group-hover:rotate-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    Statistiques
+                    <span>Statistiques</span>
                 </a>
-                <span class="text-gray-600 dark:text-gray-400">
-                    Connecté en tant que: <strong class="dark:text-white"><%= username %></strong>
-                </span>
-                <a href="/logout" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">Déconnexion</a>
+                
+                <div class="user-info relative group ml-4 px-3 py-2 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center transition-all duration-300 hover:shadow-md hover:bg-white dark:hover:bg-gray-700">
+                    <span class="text-gray-600 dark:text-gray-400 mr-2">
+                        <span class="hidden md:inline">Connecté en tant que:</span> 
+                        <strong class="dark:text-white font-medium"><%= username %></strong>
+                    </span>
+                    <a href="/logout" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 opacity-0 group-hover:opacity-100 transition-opacity absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 p-2 rounded shadow-lg">
+                        Déconnexion
+                    </a>
+                </div>
             </div>
         </div>
         
-        <!-- New Ticket Form -->
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
-            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Nouvel Appel</h2>
+        <!-- New Ticket Form avec animations -->
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 transform transition-all hover:shadow-lg">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Nouvel Appel
+            </h2>
             <form action="/api/tickets" method="POST" class="space-y-4">
                 <div class="flex items-center gap-4 mb-4">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" 
-                               id="isGLPI" 
-                               name="isGLPI" 
+                    <div class="flex items-center gap-2 transition-all duration-300 hover:transform hover:scale-105">
+                        <input type="checkbox"
+                               id="isGLPI"
+                               name="isGLPI"
                                value="true"
-                               class="rounded"
+                               class="rounded transition-all duration-300"
                                onchange="toggleGLPIFields(this)">
                         <label for="isGLPI" class="text-gray-700 dark:text-gray-300">Ticket GLPI</label>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" 
-                               id="isBlocking" 
-                               name="isBlocking" 
+                    <div class="flex items-center gap-2 transition-all duration-300 hover:transform hover:scale-105">
+                        <input type="checkbox"
+                               id="isBlocking"
+                               name="isBlocking"
                                value="true"
                                class="rounded">
                         <label for="isBlocking" class="text-red-600 dark:text-red-400 font-medium">
@@ -110,11 +329,11 @@
                 <div>
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Appelant</label>
                     <div class="relative">
-                        <input type="text" 
-                               name="caller" 
-                               required 
+                        <input type="text"
+                               name="caller"
+                               required
                                list="callers"
-                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500">
                         <datalist id="callers">
                             <% savedFields.callers.forEach(caller => { %>
                                 <option value="<%= caller %>">
@@ -126,10 +345,10 @@
                 <div class="non-glpi-field">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Raison</label>
                     <div class="relative">
-                        <input type="text" 
-                               name="reason" 
+                        <input type="text"
+                               name="reason"
                                list="reasons"
-                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                               class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500">
                         <datalist id="reasons">
                             <% savedFields.reasons.forEach(reason => { %>
                                 <option value="<%= reason %>">
@@ -140,10 +359,10 @@
 
                 <div class="non-glpi-field">
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Tags</label>
-                    <input type="text" 
-                           name="tags" 
+                    <input type="text"
+                           name="tags"
                            placeholder="Séparez les tags par des virgules"
-                           class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                           class="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white transition-all duration-300 focus:ring-2 focus:ring-blue-500"
                            list="tags">
                     <datalist id="tags">
                        <% savedFields.tags.forEach(tag => { %>
@@ -152,99 +371,103 @@
                     </datalist>
                 </div>
 
-                <button type="submit" 
-                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
-                    Créer l'Appel
+                <button type="submit"
+                        class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 transition-all duration-300 create-btn flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    <span>Créer l'Appel</span>
                 </button>
             </form>
-        </div>
-        <!-- Saved Fields Button -->
-        <div class="text-right mb-4">
-            <button onclick="toggleSavedFields()" 
-                    class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600 flex items-center gap-2 ml-auto">
-                <span id="savedFieldsButtonText">Afficher les champs mémorisés</span>
-                <svg id="savedFieldsIcon" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-            </button>
-        </div>
-
-        <!-- Saved Fields Section -->
-        <div id="savedFieldsSection" class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8 hidden">
-            <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Champs mémorisés</h3>
             
-            <!-- Callers -->
-            <div class="mb-6">
-                <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Appelants</h4>
-                <div class="flex flex-wrap gap-2">
-                    <% savedFields.callers.forEach(caller => { %>
-                        <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
-                            <span class="text-gray-800 dark:text-gray-200"><%= caller %></span>
-                            <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                <input type="hidden" name="field" value="caller">
-                                <input type="hidden" name="value" value="<%= caller %>">
-                                <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">×</button>
-                            </form>
+            <!-- Section pour les champs mémorisés -->
+            <div class="mt-8">
+                <button onclick="toggleSavedFields()" 
+                        class="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-300">
+                    <svg id="savedFieldsIcon" class="w-5 h-5 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                    <span id="savedFieldsButtonText">Afficher les champs mémorisés</span>
+                </button>
+                
+                <div id="savedFieldsSection" class="hidden space-y-6 opacity-0 transform -translate-y-4 transition-all duration-300">
+                    <!-- Appelants -->
+                    <div>
+                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Appelants mémorisés</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <% savedFields.callers.forEach(caller => { %>
+                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <span class="text-gray-800 dark:text-gray-200"><%= caller %></span>
+                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
+                                        <input type="hidden" name="field" value="caller">
+                                        <input type="hidden" name="value" value="<%= caller %>">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
+                                    </form>
+                                </div>
+                            <% }) %>
                         </div>
-                    <% }) %>
-                </div>
-            </div>
-
-            <!-- Reasons -->
-            <div class="mb-6">
-                <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Raisons</h4>
-                <div class="flex flex-wrap gap-2">
-                    <% savedFields.reasons.forEach(reason => { %>
-                        <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
-                            <span class="text-gray-800 dark:text-gray-200"><%= reason %></span>
-                            <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                <input type="hidden" name="field" value="reason">
-                                <input type="hidden" name="value" value="<%= reason %>">
-                                <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">×</button>
-                            </form>
+                    </div>
+                    
+                    <!-- Raisons -->
+                    <div>
+                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Raisons mémorisées</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <% savedFields.reasons.forEach(reason => { %>
+                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <span class="text-gray-800 dark:text-gray-200"><%= reason %></span>
+                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
+                                        <input type="hidden" name="field" value="reason">
+                                        <input type="hidden" name="value" value="<%= reason %>">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
+                                    </form>
+                                </div>
+                            <% }) %>
                         </div>
-                    <% }) %>
-                </div>
-            </div>
-
-            <!-- Tags -->
-            <div>
-                <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Tags</h4>
-                <div class="flex flex-wrap gap-2">
-                    <% savedFields.tags.forEach(tag => { %>
-                        <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded">
-                            <span class="text-gray-800 dark:text-gray-200"><%= tag %></span>
-                            <form action="/api/saved-fields/delete" method="POST" class="ml-2">
-                                <input type="hidden" name="field" value="tag">
-                                <input type="hidden" name="value" value="<%= tag %>">
-                                <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300">×</button>
-                            </form>
+                    </div>
+                    
+                    <!-- Tags -->
+                    <div>
+                        <h4 class="font-medium mb-2 text-gray-700 dark:text-gray-300">Tags mémorisés</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <% savedFields.tags.forEach(tag => { %>
+                                <div class="inline-flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded transition-all hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    <span class="text-gray-800 dark:text-gray-200"><%= tag %></span>
+                                    <form action="/api/saved-fields/delete" method="POST" class="ml-2">
+                                        <input type="hidden" name="field" value="tag">
+                                        <input type="hidden" name="value" value="<%= tag %>">
+                                        <button type="submit" class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-all">×</button>
+                                    </form>
+                                </div>
+                            <% }) %>
                         </div>
-                    <% }) %>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Tickets List -->
-        <div class="space-y-4">
-            <% tickets.forEach(ticket => { %>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md">
+        
+        <!-- Tickets List avec animations -->
+        <div class="space-y-4 tickets-container">
+            <% tickets.forEach((ticket, index) => { %>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md ticket-card <%= ticket.isBlocking ? 'blocking' : '' %> <%= ticket.isGLPI ? 'glpi' : '' %>" 
+                     data-ticket-id="<%= ticket.id %>"
+                     style="animation-delay: <%= 0.1 * (index + 1) %>s">
                     <div class="flex justify-between items-start">
                         <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="font-semibold text-gray-900 dark:text-white"><%= ticket.caller %></h3>
                                 <% if (ticket.isGLPI) { %>
-                                    <span class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs px-2 py-1 rounded">GLPI</span>
+                                    <span class="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs px-2 py-1 rounded-full">GLPI</span>
                                 <% } %>
                                 <% if (ticket.isBlocking) { %>
-                                    <span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs px-2 py-1 rounded">Bloquant</span>
+                                    <span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 text-xs px-2 py-1 rounded-full">Bloquant</span>
                                 <% } %>
                             </div>
                             <% if (!ticket.isGLPI) { %>
-                                <p class="text-gray-600 dark:text-gray-400"><%= ticket.reason %></p>
-                                <div class="flex gap-2 mt-2">
+                                <p class="text-gray-600 dark:text-gray-400 mt-1"><%= ticket.reason %></p>
+                                <div class="flex flex-wrap gap-2 mt-2">
                                     <% ticket.tags.forEach(tag => { %>
-                                        <span class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded text-sm">
+                                        <span class="bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-1 rounded-full text-sm transition-all hover:bg-gray-300 dark:hover:bg-gray-600">
                                             <%= tag %>
                                         </span>
                                     <% }) %>
@@ -273,48 +496,138 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="archiveTicket('<%= ticket.id %>')"
-                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 whitespace-nowrap">
-                                Archiver
+                                    class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700 whitespace-nowrap btn action-btn">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                                    </svg>
+                                    Archiver
+                                </span>
                             </button>
                             <% if (!ticket.isGLPI) { %>
-                                <a href="/ticket/<%= ticket.id %>" 
-                                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700">
-                                    Voir détails
+                                <a href="/ticket/<%= ticket.id %>"
+                                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 btn action-btn">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                        Détails
+                                    </span>
                                 </a>
                             <% } %>
-                            <a href="/ticket/<%= ticket.id %>/edit" 
-                               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700">
-                                Modifier
+                            <a href="/ticket/<%= ticket.id %>/edit"
+                               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700 btn action-btn">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    Modifier
+                                </span>
                             </a>
-                            <form action="/api/tickets/<%= ticket.id %>/delete" method="POST" 
+                            <form action="/api/tickets/<%= ticket.id %>/delete" method="POST"
                                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce ticket ?')">
-                                <button type="submit" 
-                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700">
-                                    Supprimer
+                                <button type="submit"
+                                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 btn action-btn">
+                                    <span class="flex items-center gap-1">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        Supprimer
+                                    </span>
                                 </button>
                             </form>
                         </div>
                     </div>
                 </div>
             <% }) %>
+
+            <!-- Afficher un message si aucun ticket -->
+            <% if (tickets.length === 0) { %>
+                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md text-center">
+                    <p class="text-gray-600 dark:text-gray-300">Aucun appel en cours. Créez un nouvel appel pour commencer.</p>
+                </div>
+            <% } %>
         </div>
     </div>
 
+    <!-- Bouton de thème avec animation -->
+    <button id="theme-toggle" 
+            class="fixed bottom-4 right-4 p-3 bg-white dark:bg-gray-800 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl focus:outline-none z-10">
+        <!-- Icône soleil pour le mode sombre -->
+        <svg id="sun-icon" class="w-6 h-6 text-yellow-500 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+        <!-- Icône lune pour le mode clair -->
+        <svg id="moon-icon" class="w-6 h-6 text-gray-700 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+    </button>
+
+    <!-- Feedback pour le thème -->
+    <div id="theme-feedback" class="fixed top-4 right-4 bg-white dark:bg-gray-800 py-2 px-4 rounded-md shadow-lg transition-opacity duration-500 opacity-0 pointer-events-none z-50">
+        <span id="theme-message" class="text-gray-900 dark:text-white"></span>
+    </div>
+
     <script>
-        function toggleGLPIFields(checkbox) {
-            const nonGLPIFields = document.querySelectorAll('.non-glpi-field');
-            nonGLPIFields.forEach(field => {
-                const inputs = field.querySelectorAll('input');
-                if (checkbox.checked) {
-                    field.style.display = 'none';
-                    inputs.forEach(input => input.required = false);
+        // Gestionnaire de thème amélioré
+        class ThemeManager {
+            constructor() {
+                this.themeToggle = document.getElementById('theme-toggle');
+                this.prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                this.init();
+            }
+
+            init() {
+                // Charger le thème depuis localStorage ou utiliser la préférence système
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme === 'dark' || (savedTheme === null && this.prefersDarkMode)) {
+                    document.documentElement.classList.add('dark');
+                    this.showThemeFeedback('Mode sombre activé');
                 } else {
-                    field.style.display = 'block';
-                    inputs.forEach(input => input.required = true);
+                    document.documentElement.classList.remove('dark');
+                    this.showThemeFeedback('Mode clair activé');
                 }
-            });
+
+                // Ajouter l'écouteur d'événement au bouton de thème
+                if (this.themeToggle) {
+                    this.themeToggle.addEventListener('click', () => this.toggleTheme());
+                }
+            }
+
+            toggleTheme() {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    this.showThemeFeedback('Mode clair activé');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                    this.showThemeFeedback('Mode sombre activé');
+                }
+            }
+
+            showThemeFeedback(message) {
+                const feedback = document.getElementById('theme-feedback');
+                const messageEl = document.getElementById('theme-message');
+                
+                if (feedback && messageEl) {
+                    messageEl.textContent = message;
+                    feedback.classList.remove('opacity-0');
+                    
+                    setTimeout(() => {
+                        feedback.classList.add('opacity-0');
+                    }, 2000);
+                }
+            }
         }
 
+        // Afficher/masquer les champs mémorisés
         function toggleSavedFields() {
             const section = document.getElementById('savedFieldsSection');
             const icon = document.getElementById('savedFieldsIcon');
@@ -322,26 +635,80 @@
             
             if (section.classList.contains('hidden')) {
                 section.classList.remove('hidden');
-                icon.classList.add('rotate-180');
+                setTimeout(() => {
+                    section.classList.remove('opacity-0', '-translate-y-4');
+                }, 10);
+                icon.style.transform = 'rotate(180deg)';
                 buttonText.textContent = 'Masquer les champs mémorisés';
             } else {
-                section.classList.add('hidden');
-                icon.classList.remove('rotate-180');
+                section.classList.add('opacity-0', '-translate-y-4');
+                setTimeout(() => {
+                    section.classList.add('hidden');
+                }, 300);
+                icon.style.transform = 'rotate(0)';
                 buttonText.textContent = 'Afficher les champs mémorisés';
             }
         }
 
-        function archiveTicket(id) {
-            if (confirm('Voulez-vous archiver cet appel ?')) {
-                fetch(`/api/tickets/${id}/archive`, {
+        // Activer/désactiver les champs spécifiques aux tickets non-GLPI
+        function toggleGLPIFields(checkbox) {
+            const nonGlpiFields = document.querySelectorAll('.non-glpi-field');
+            nonGlpiFields.forEach(field => {
+                if (checkbox.checked) {
+                    field.style.opacity = '0.5';
+                    field.style.pointerEvents = 'none';
+                    const inputs = field.querySelectorAll('input');
+                    inputs.forEach(input => {
+                        input.removeAttribute('required');
+                    });
+                } else {
+                    field.style.opacity = '1';
+                    field.style.pointerEvents = 'auto';
+                    const reasonInput = document.querySelector('input[name="reason"]');
+                    if (reasonInput) {
+                        reasonInput.setAttribute('required', '');
+                    }
+                }
+            });
+        }
+
+        // Archiver un ticket
+        function archiveTicket(ticketId) {
+            if (confirm('Êtes-vous sûr de vouloir archiver ce ticket ?')) {
+                fetch(`/api/tickets/${ticketId}/archive`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     }
-                }).then(() => window.location.reload());
+                })
+                .then(response => {
+                    if (response.ok) {
+                        const ticketElement = document.querySelector(`[data-ticket-id="${ticketId}"]`);
+                        if (ticketElement) {
+                            ticketElement.style.opacity = '0';
+                            ticketElement.style.transform = 'translateX(100px)';
+                            setTimeout(() => {
+                                ticketElement.remove();
+                                if (document.querySelectorAll('.ticket-card').length === 0) {
+                                    location.reload();
+                                }
+                            }, 500);
+                        }
+                    } else {
+                        alert('Une erreur est survenue lors de l\'archivage du ticket.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    alert('Une erreur est survenue lors de l\'archivage du ticket.');
+                });
             }
         }
+
+        // Initialiser le gestionnaire de thème
+        document.addEventListener('DOMContentLoaded', () => {
+            new ThemeManager();
+        });
     </script>
-    <script src="/js/themeManager.js"></script>
 </body>
 </html>
