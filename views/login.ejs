@@ -1,495 +1,189 @@
 <!DOCTYPE html>
 <html class="dark:bg-gray-900">
-<head>
-    <title>Login - CallFix</title>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CallFix</title>
+    <!-- Chargement de Tailwind CSS et Animate.css -->
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-   
+    
     <!-- Initialisation du thème -->
     <script>
-        // Synchroniser le thème au chargement de la page
-        const theme = localStorage.getItem('color-theme');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
+      const theme = localStorage.getItem('color-theme');
+      if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+      } else {
+          document.documentElement.classList.remove('dark');
+      }
     </script>
 
     <style>
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-       
-        @keyframes slideInUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-       
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-       
-        .page-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-       
-        .form-slide-up {
-            animation: slideInUp 0.6s ease-out;
-            animation-delay: 0.3s;
-            opacity: 0;
-            animation-fill-mode: forwards;
-        }
-       
-        /* Styles autocompletion */
-        .autocomplete-list {
-            display: none;
-            position: absolute;
-            width: 100%;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-top: none;
-            border-radius: 0 0 0.375rem 0.375rem;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            animation: slideInUp 0.3s ease-out;
-        }
+      /* Animations de base */
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* CORRECTION du mode sombre - utilisation de html.dark au lieu de .dark */
-        html.dark .autocomplete-list {
-            background: #1f2937;
-            border-color: #374151;
-            color: white;
-        }
+      .page-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+      .form-slide-up { animation: slideInUp 0.6s ease-out 0.3s forwards; opacity: 0; }
 
-        .autocomplete-list.show {
-            display: block;
-        }
+      /* Autocomplétion simplifiée */
+      .autocomplete-list {
+        display: none;
+        position: absolute;
+        width: 100%;
+        background: white;
+        border: 1px solid #e2e8f0;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+      }
+      html.dark .autocomplete-list { background: #1f2937; border-color: #374151; color: white; }
+      .autocomplete-list.show { display: block; }
+      .autocomplete-item {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      html.dark .autocomplete-item { color: #f3f4f6; }
+      .autocomplete-item:hover { background-color: #f3f4f6; transform: translateX(5px); }
+      html.dark .autocomplete-item:hover { background-color: #374151; }
+      .autocomplete-item.selected { background-color: #e5e7eb; }
+      html.dark .autocomplete-item.selected { background-color: #4b5563; }
 
-        .autocomplete-item {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            color: #1f2937;
-            transition: all 0.2s ease;
-        }
-
-        html.dark .autocomplete-item {
-            color: #f3f4f6;
-        }
-
-        .autocomplete-item:hover {
-            background-color: #f3f4f6;
-            transform: translateX(5px);
-        }
-
-        html.dark .autocomplete-item:hover {
-            background-color: #374151;
-        }
-
-        .autocomplete-item.selected {
-            background-color: #e5e7eb;
-        }
-
-        html.dark .autocomplete-item.selected {
-            background-color: #4b5563;
-        }
-
-        /* Transition du thème */
-        * {
-            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-        }
-       
-        .input-focus-effect:focus {
-            transform: scale(1.02);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-        }
-       
-        .link-hover-effect {
-            position: relative;
-        }
-       
-        .link-hover-effect::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -2px;
-            left: 0;
-            background-color: currentColor;
-            transition: width 0.3s ease;
-        }
-       
-        .link-hover-effect:hover::after {
-            width: 100%;
-        }
-       
-        /* Logo animation */
-        .logo-text {
-            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientFlow 5s ease infinite;
-        }
-       
-        @keyframes gradientFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-       
-        /* SVG icon animations */
-        .svg-icon {
-            transition: transform 0.3s;
-        }
-       
-        .svg-container:hover .svg-icon {
-            transform: translateY(-3px) rotate(5deg);
-        }
-        
-        /* Bouton de thème flottant */
-        #theme-toggle {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1000;
-            background-color: #f3f4f6;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-        
-        html.dark #theme-toggle {
-            background-color: #374151;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        #theme-toggle:hover {
-            transform: scale(1.1);
-        }
-        
-        #light-icon, #dark-icon {
-            position: absolute;
-            transition: opacity 0.3s ease, transform 0.5s ease;
-        }
-        
-        html.dark #light-icon {
-            opacity: 0;
-            transform: rotate(100deg);
-        }
-        
-        html.dark #dark-icon {
-            opacity: 1;
-            transform: rotate(0);
-        }
-        
-        #dark-icon {
-            opacity: 0;
-            transform: rotate(-100deg);
-        }
-        
-        /* Animation des badges de version */
-        .version-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.3s ease, color 0.3s ease;
-            margin-right: 12px;
-        }
-        
-        .version-badge:hover {
-            transform: translateY(-2px);
-            color: #3b82f6;
-        }
-        
-        html.dark .version-badge:hover {
-            color: #60a5fa;
-        }
-        
-        /* Animation de la section développeur */
-        .developer-section {
-            animation: fadeIn 0.8s ease-out;
-            animation-delay: 0.6s;
-            opacity: 0;
-            animation-fill-mode: forwards;
-        }
+      /* Transition globale pour une fluidité accrue */
+      * { transition: background-color 0.5s ease, border-color 0.5s ease; }
     </style>
-</head>
-
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
+  </head>
+  <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
     <div class="min-h-screen flex items-center justify-center p-4 page-fade-in">
-        <div class="max-w-md w-full">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow form-slide-up">
-                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white logo-text">CallFix</h1>
-               
-                <form action="/login" method="POST" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
-                        <div class="relative">
-                            <input type="text"
-                                   name="username"
-                                   id="username"
-                                   required
-                                   placeholder="Entrez votre nom"
-                                   class="w-full p-2 border rounded
-                                          text-gray-900 dark:text-white
-                                          bg-white dark:bg-gray-700
-                                          border-gray-300 dark:border-gray-600
-                                          focus:border-blue-500 dark:focus:border-blue-400
-                                          focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
-                                          placeholder-gray-400 dark:placeholder-gray-500
-                                          input-focus-effect">
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                            id="loginButton" 
-                            class="w-full bg-blue-500 text-white px-4 py-2 rounded
-                                   hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
-                                   focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                                   dark:focus:ring-offset-gray-800
-                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]
-                                   btn-pulse">
-                        <span id="buttonText">Se connecter</span>
-                        <span id="loadingSpinner" class="hidden">
-                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </span>
-                    </button>
-                </form>
-
-                <div class="mt-4 flex justify-center space-x-4">
-                    <!-- Lien "Voir les statistiques" -->
-                    <a href="/stats"
-                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
-                        <svg class="w-4 h-4 svg-icon"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <span>Voir les statistiques</span>
-                    </a>
-               
-                    <!-- Bouton "Générer un Rapport" -->
-                    <a href="/report"
-                       class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
-                        <svg class="w-4 h-4 svg-icon"
-                             fill="none"
-                             stroke="currentColor"
-                             viewBox="0 0 24 24">
-                            <path stroke-linecap="round"
-                                  stroke-linejoin="round"
-                                  stroke-width="2"
-                                  d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
-                        <span>Générer un Rapport</span>
-                    </a>
-                </div>
-                
-                <!-- AJOUT: Section développeur avec version, nom et GitHub -->
-                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs flex flex-wrap justify-center items-center gap-4 developer-section">
-                    <div class="version-badge">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zm7-10a1 1 0 01.707.293l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 8l-3.293-3.293A1 1 0 0112 4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span>Version 1.0.9</span>
-                    </div>
-                    
-                    <div class="version-badge">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span>Développé par <span class="font-medium text-blue-500 dark:text-blue-400">Sault</span></span>
-                    </div>
-                    
-                    <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" 
-                       class="version-badge hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                        </svg>
-                        <span>GitHub</span>
-                    </a>
-                </div>
+      <div class="max-w-md w-full">
+        <div class="bg-white dark:bg-gray-800 p-8 rounded shadow-md form-slide-up">
+          <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white">CallFix</h1>
+          <form action="/login" method="POST" class="space-y-4">
+            <div>
+              <label for="username" class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
+              <div class="relative">
+                <input type="text" name="username" id="username" required placeholder="Entrez votre nom"
+                  class="w-full p-2 border rounded text-gray-900 dark:text-white bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400">
+              </div>
             </div>
+            <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              Se connecter
+            </button>
+          </form>
+          <!-- Section développeur -->
+          <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs flex gap-4 justify-center">
+            <span>Version 1.0.0.9</span>
+            <span>Développé par <span class="font-medium text-blue-500 dark:text-blue-400">Sault</span></span>
+            <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" class="hover:text-blue-500 dark:hover:text-blue-400">GitHub</a>
+          </div>
         </div>
+      </div>
     </div>
 
-    <!-- Bouton de thème flottant - AJOUTÉ -->
-    <div id="theme-toggle">
-        <svg id="light-icon" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-        <svg id="dark-icon" class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-        </svg>
+    <!-- Bouton de changement de thème -->
+    <div id="theme-toggle" class="fixed bottom-5 right-5 w-10 h-10 rounded-full flex items-center justify-center cursor-pointer bg-gray-100 dark:bg-gray-700 shadow-md">
+      <svg id="light-icon" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707"></path>
+        <circle cx="12" cy="12" r="4"></circle>
+      </svg>
+      <svg id="dark-icon" class="w-6 h-6 text-indigo-400 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+      </svg>
     </div>
 
-    <!-- Script du gestionnaire de thème - REMPLACÉ PAR SCRIPT INTÉGRÉ -->
     <script>
-        // Classe d'autocomplétion - VOTRE SYSTÈME ORIGINAL
-        class Autocomplete {
-            constructor(input, items) {
-                this.input = input;
-                this.items = items;
-                this.currentFocus = -1;
-                this.setup();
+      // Classe Autocomplete allégée
+      class Autocomplete {
+        constructor(input, items) {
+          this.input = input;
+          this.items = items;
+          this.currentFocus = -1;
+          this.setup();
+        }
+        setup() {
+          this.list = document.createElement('div');
+          this.list.classList.add('autocomplete-list');
+          this.input.parentNode.appendChild(this.list);
+          this.input.addEventListener('input', () => this.updateList());
+          this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+          document.addEventListener('click', (e) => {
+            if (!this.input.contains(e.target)) this.list.classList.remove('show');
+          });
+        }
+        updateList() {
+          const value = this.input.value.toLowerCase();
+          this.currentFocus = -1;
+          this.list.innerHTML = '';
+          if (!value) return this.list.classList.remove('show');
+          const matches = this.items.filter(item => item.toLowerCase().includes(value));
+          if (matches.length) {
+            this.list.classList.add('show');
+            matches.forEach(item => {
+              const div = document.createElement('div');
+              div.classList.add('autocomplete-item');
+              // Mise en évidence du texte correspondant
+              const regex = new RegExp(`(${value})`, 'gi');
+              div.innerHTML = item.replace(regex, '<b>$1</b>');
+              div.addEventListener('click', () => { this.input.value = item; this.list.classList.remove('show'); });
+              this.list.appendChild(div);
+            });
+          } else {
+            this.list.classList.remove('show');
+          }
+        }
+        handleKeydown(e) {
+          const items = Array.from(this.list.getElementsByClassName('autocomplete-item'));
+          if (!items.length) return;
+          if (e.key === 'ArrowDown') {
+            this.currentFocus = (this.currentFocus + 1) % items.length;
+            this.setActive(items);
+          } else if (e.key === 'ArrowUp') {
+            this.currentFocus = (this.currentFocus - 1 + items.length) % items.length;
+            this.setActive(items);
+          } else if (e.key === 'Enter' && this.currentFocus > -1) {
+            e.preventDefault();
+            items[this.currentFocus].click();
+          }
+        }
+        setActive(items) {
+          items.forEach(item => item.classList.remove('selected'));
+          if (this.currentFocus > -1) {
+            items[this.currentFocus].classList.add('selected');
+            items[this.currentFocus].scrollIntoView({ block: 'nearest' });
+          }
+        }
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Exemple d'utilisateurs pour l'autocomplétion
+        const savedUsers = ["Alice", "Bob", "Charlie"];
+        const usernameInput = document.getElementById('username');
+        if (usernameInput) {
+          new Autocomplete(usernameInput, savedUsers);
+          usernameInput.addEventListener('input', function() {
+            if (this.value.toLowerCase() === 'admin') {
+              window.location.href = '/admin/create-ticket';
             }
-
-            setup() {
-                this.list = document.createElement('div');
-                this.list.classList.add('autocomplete-list');
-                this.input.parentNode.appendChild(this.list);
-
-                this.input.addEventListener('input', () => this.updateList());
-                this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
-                document.addEventListener('click', (e) => {
-                    if (!this.input.contains(e.target)) {
-                        this.list.classList.remove('show');
-                    }
-                });
-            }
-
-            updateList() {
-                const value = this.input.value.toLowerCase();
-                this.currentFocus = -1;
-                this.list.innerHTML = '';
-
-                if (!value) {
-                    this.list.classList.remove('show');
-                    return;
-                }
-
-                const matchingItems = this.items.filter(item =>
-                    item.toLowerCase().includes(value)
-                );
-
-                if (matchingItems.length) {
-                    this.list.classList.add('show');
-                    matchingItems.forEach((item, index) => {
-                        const div = document.createElement('div');
-                        div.classList.add('autocomplete-item');
-                       
-                        // Mettre en évidence la partie correspondante
-                        const regex = new RegExp(`(${value})`, 'gi');
-                        const highlightedText = item.replace(regex, '<b>$1</b>');
-                        div.innerHTML = highlightedText;
-                       
-                        // Ajouter un délai progressif pour l'animation
-                        div.style.animationDelay = `${index * 50}ms`;
-                        div.style.opacity = "0";
-                        div.style.animation = "slideInUp 0.3s ease-out forwards";
-                       
-                        div.addEventListener('click', () => {
-                            this.input.value = item;
-                            this.list.classList.remove('show');
-                        });
-                        this.list.appendChild(div);
-                    });
-                } else {
-                    this.list.classList.remove('show');
-                }
-            }
-
-            handleKeydown(e) {
-                const items = this.list.getElementsByTagName('div');
-                if (!items.length) return;
-
-                if (e.key === 'ArrowDown') {
-                    this.currentFocus++;
-                    if (this.currentFocus >= items.length) this.currentFocus = 0;
-                    this.setActive(items);
-                } else if (e.key === 'ArrowUp') {
-                    this.currentFocus--;
-                    if (this.currentFocus < 0) this.currentFocus = items.length - 1;
-                    this.setActive(items);
-                } else if (e.key === 'Enter' && this.currentFocus > -1) {
-                    e.preventDefault();
-                    items[this.currentFocus].click();
-                }
-            }
-
-            setActive(items) {
-                Array.from(items).forEach(item => item.classList.remove('selected'));
-                if (this.currentFocus > -1) {
-                    items[this.currentFocus].classList.add('selected');
-                    // Assurer que l'élément sélectionné est visible
-                    items[this.currentFocus].scrollIntoView({block: 'nearest'});
-                }
-            }
+          });
         }
 
-        // Initialisation au chargement de la page - MODIFIÉE
-        document.addEventListener('DOMContentLoaded', function() {
-            // Données d'exemple pour l'autocomplete (à remplacer par vos données)
-            const savedUsers = <%- JSON.stringify(savedUsers) %>;
-            
-            // Initialiser l'autocomplétion
-            const usernameInput = document.getElementById('username');
-            if (usernameInput) {
-                new Autocomplete(usernameInput, savedUsers);
-            }
-
-            // Redirection admin
-            if (usernameInput) {
-                usernameInput.addEventListener('input', function() {
-                    if (this.value.toLowerCase() === 'admin') {
-                        window.location.href = '/admin/create-ticket';
-                    }
-                });
-            }
-            
-            // Animation de soumission du formulaire
-            const loginForm = document.querySelector('form');
-            const buttonText = document.getElementById('buttonText');
-            const loadingSpinner = document.getElementById('loadingSpinner');
-            
-            if (loginForm && buttonText && loadingSpinner) {
-                loginForm.addEventListener('submit', function(e) {
-                    buttonText.classList.add('hidden');
-                    loadingSpinner.classList.remove('hidden');
-                    // Ne pas annuler l'événement, laissez le formulaire se soumettre
-                });
-            }
-            
-            // Gestionnaire de thème - CORRIGÉ
-            const themeToggle = document.getElementById('theme-toggle');
-            if (themeToggle) {
-                themeToggle.addEventListener('click', function() {
-                    // Si en mode sombre, passer au mode clair
-                    if (document.documentElement.classList.contains('dark')) {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    } else {
-                        // Sinon, passer au mode sombre
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    }
-                });
-            }
+        // Gestion du changement de thème
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+          if (document.documentElement.classList.contains('dark')) {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('color-theme', 'light');
+            document.getElementById('light-icon').classList.remove('hidden');
+            document.getElementById('dark-icon').classList.add('hidden');
+          } else {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('color-theme', 'dark');
+            document.getElementById('light-icon').classList.add('hidden');
+            document.getElementById('dark-icon').classList.remove('hidden');
+          }
         });
+      });
     </script>
-</body>
+  </body>
 </html>
