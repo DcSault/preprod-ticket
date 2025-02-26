@@ -7,11 +7,11 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
    
-    <!-- Initialisation du thème - AMÉLIORÉ -->
+    <!-- Initialisation du thème - CORRIGÉ -->
     <script>
-        // Synchroniser le thème au chargement de la page
-        const theme = localStorage.getItem('color-theme');
-        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        // Vérifier si le thème est déjà stocké dans localStorage
+        if (localStorage.getItem('color-theme') === 'dark' || 
+            (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
         } else {
             document.documentElement.classList.remove('dark');
@@ -19,18 +19,35 @@
     </script>
 
     <style>
-        /* AMÉLIORATION 1: Animations pour l'autocomplétion */
+        /* Animations */
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        @keyframes highlightText {
-            0% { background-color: rgba(59, 130, 246, 0.2); }
-            100% { background-color: transparent; }
+       
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
-        
-        /* Style de base amélioré */
+       
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+       
+        .page-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+       
+        .form-slide-up {
+            animation: slideInUp 0.6s ease-out;
+            animation-delay: 0.3s;
+            opacity: 0;
+            animation-fill-mode: forwards;
+        }
+       
+        /* Styles autocompletion */
         .autocomplete-list {
             display: none;
             position: absolute;
@@ -42,106 +59,128 @@
             max-height: 200px;
             overflow-y: auto;
             z-index: 1000;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            animation: fadeIn 0.3s ease-out;
+            animation: slideInUp 0.3s ease-out;
         }
 
-        .dark .autocomplete-list {
+        /* CORRECTION du mode sombre - utilisation de html.dark au lieu de .dark */
+        html.dark .autocomplete-list {
             background: #1f2937;
             border-color: #374151;
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
         }
 
         .autocomplete-list.show {
             display: block;
         }
 
-        /* AMÉLIORATION 2: Style plus interactif pour les éléments */
         .autocomplete-item {
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem;
             cursor: pointer;
             color: #1f2937;
-            border-left: 3px solid transparent;
             transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
         }
 
-        .autocomplete-item b {
-            color: #3b82f6;
-            font-weight: 600;
-        }
-
-        .dark .autocomplete-item b {
-            color: #60a5fa;
-        }
-
-        .dark .autocomplete-item {
+        html.dark .autocomplete-item {
             color: #f3f4f6;
-            border-left: 3px solid transparent;
         }
 
         .autocomplete-item:hover {
             background-color: #f3f4f6;
-            border-left-color: #3b82f6;
-            padding-left: 1.25rem;
+            transform: translateX(5px);
         }
 
-        .dark .autocomplete-item:hover {
+        html.dark .autocomplete-item:hover {
             background-color: #374151;
-            border-left-color: #60a5fa;
         }
 
         .autocomplete-item.selected {
             background-color: #e5e7eb;
-            border-left-color: #3b82f6;
         }
 
-        .dark .autocomplete-item.selected {
+        html.dark .autocomplete-item.selected {
             background-color: #4b5563;
-            border-left-color: #60a5fa;
         }
 
-        /* AMÉLIORATION 3: Transition fluide pour le thème */
+        /* Transition du thème */
         * {
             transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        /* AMÉLIORATION 4: Effet de focus amélioré */
-        input:focus {
-            transform: scale(1.01);
+       
+        .input-focus-effect:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+        }
+       
+        .link-hover-effect {
+            position: relative;
+        }
+       
+        .link-hover-effect::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: currentColor;
+            transition: width 0.3s ease;
+        }
+       
+        .link-hover-effect:hover::after {
+            width: 100%;
+        }
+       
+        /* Logo animation */
+        .logo-text {
+            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientFlow 5s ease infinite;
+        }
+       
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+       
+        /* SVG icon animations */
+        .svg-icon {
+            transition: transform 0.3s;
+        }
+       
+        .svg-container:hover .svg-icon {
+            transform: translateY(-3px) rotate(5deg);
         }
         
-        /* AMÉLIORATION 5: Bouton flottant de thème */
+        /* Bouton de thème flottant */
         #theme-toggle {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 48px;
-            height: 48px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            background: white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 1000;
+            background-color: #f3f4f6;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
             transition: all 0.3s ease;
         }
         
-        .dark #theme-toggle {
-            background: #374151;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        html.dark #theme-toggle {
+            background-color: #374151;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
         
         #theme-toggle:hover {
             transform: scale(1.1);
-        }
-        
-        #theme-toggle svg {
-            transition: all 0.3s ease;
         }
         
         #light-icon, #dark-icon {
@@ -149,12 +188,12 @@
             transition: opacity 0.3s ease, transform 0.5s ease;
         }
         
-        .dark #light-icon {
+        html.dark #light-icon {
             opacity: 0;
             transform: rotate(100deg);
         }
         
-        .dark #dark-icon {
+        html.dark #dark-icon {
             opacity: 1;
             transform: rotate(0);
         }
@@ -163,32 +202,40 @@
             opacity: 0;
             transform: rotate(-100deg);
         }
-
-        /* AMÉLIORATION 6: Badge de version */
+        
+        /* Animation des badges de version */
         .version-badge {
             display: inline-flex;
             align-items: center;
-            font-size: 0.75rem;
-            color: #6b7280;
-            transition: all 0.3s ease;
+            justify-content: center;
+            transition: transform 0.3s ease, color 0.3s ease;
+            margin-right: 12px;
         }
         
         .version-badge:hover {
+            transform: translateY(-2px);
             color: #3b82f6;
-            transform: translateY(-1px);
         }
         
-        .dark .version-badge:hover {
+        html.dark .version-badge:hover {
             color: #60a5fa;
+        }
+        
+        /* Animation de la section développeur */
+        .developer-section {
+            animation: fadeIn 0.8s ease-out;
+            animation-delay: 0.6s;
+            opacity: 0;
+            animation-fill-mode: forwards;
         }
     </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
-    <div class="min-h-screen flex items-center justify-center p-4">
+    <div class="min-h-screen flex items-center justify-center p-4 page-fade-in">
         <div class="max-w-md w-full">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                <h1 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">CallFix</h1>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow form-slide-up">
+                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white logo-text">CallFix</h1>
                
                 <form action="/login" method="POST" class="space-y-4">
                     <div>
@@ -205,17 +252,26 @@
                                           border-gray-300 dark:border-gray-600
                                           focus:border-blue-500 dark:focus:border-blue-400
                                           focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
-                                          placeholder-gray-400 dark:placeholder-gray-500">
+                                          placeholder-gray-400 dark:placeholder-gray-500
+                                          input-focus-effect">
                         </div>
                     </div>
 
                     <button type="submit"
+                            id="loginButton" 
                             class="w-full bg-blue-500 text-white px-4 py-2 rounded
                                    hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                                    dark:focus:ring-offset-gray-800
-                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]">
-                        Se connecter
+                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]
+                                   btn-pulse">
+                        <span id="buttonText">Se connecter</span>
+                        <span id="loadingSpinner" class="hidden">
+                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </span>
                     </button>
                 </form>
 
@@ -223,8 +279,8 @@
                     <!-- Lien "Voir les statistiques" -->
                     <a href="/stats"
                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group">
-                        <svg class="w-4 h-4 transition-transform group-hover:scale-110"
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-4 h-4 svg-icon"
                              fill="none"
                              stroke="currentColor"
                              viewBox="0 0 24 24">
@@ -239,8 +295,8 @@
                     <!-- Bouton "Générer un Rapport" -->
                     <a href="/report"
                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group">
-                        <svg class="w-4 h-4 transition-transform group-hover:scale-110"
+                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                        <svg class="w-4 h-4 svg-icon"
                              fill="none"
                              stroke="currentColor"
                              viewBox="0 0 24 24">
@@ -253,20 +309,35 @@
                     </a>
                 </div>
                 
-                <!-- AMÉLIORATION 7: Information de version -->
-                <div class="mt-6 text-center">
-                    <div class="version-badge inline-flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                <!-- AJOUT: Section développeur avec version, nom et GitHub -->
+                <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 text-xs flex flex-wrap justify-center items-center gap-4 developer-section">
+                    <div class="version-badge">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M5 2a1 1 0 011 1v1h1a1 1 0 010 2H6v1a1 1 0 01-2 0V6H3a1 1 0 010-2h1V3a1 1 0 011-1zm0 10a1 1 0 011 1v1h1a1 1 0 110 2H6v1a1 1 0 11-2 0v-1H3a1 1 0 110-2h1v-1a1 1 0 011-1zm7-10a1 1 0 01.707.293l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 8l-3.293-3.293A1 1 0 0112 4z" clip-rule="evenodd"></path>
                         </svg>
-                        <span>Version 1.0.8</span>
+                        <span>Version 1.0.9</span>
                     </div>
+                    
+                    <div class="version-badge">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                        </svg>
+                        <span>Développé par <span class="font-medium text-blue-500 dark:text-blue-400">Victor ROSIQUE</span></span>
+                    </div>
+                    
+                    <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" 
+                       class="version-badge hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        <span>GitHub</span>
+                    </a>
                 </div>
             </div>
         </div>
     </div>
-    
-    <!-- AMÉLIORATION 8: Bouton de thème flottant -->
+
+    <!-- Bouton de thème flottant - AJOUTÉ -->
     <div id="theme-toggle">
         <svg id="light-icon" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -276,8 +347,9 @@
         </svg>
     </div>
 
+    <!-- Script du gestionnaire de thème - REMPLACÉ PAR SCRIPT INTÉGRÉ -->
     <script>
-        // AMÉLIORATION 9: Classe d'autocomplétion améliorée
+        // Classe d'autocomplétion - VOTRE SYSTÈME ORIGINAL
         class Autocomplete {
             constructor(input, items) {
                 this.input = input;
@@ -294,7 +366,7 @@
                 this.input.addEventListener('input', () => this.updateList());
                 this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
                 document.addEventListener('click', (e) => {
-                    if (!this.input.contains(e.target) && !this.list.contains(e.target)) {
+                    if (!this.input.contains(e.target)) {
                         this.list.classList.remove('show');
                     }
                 });
@@ -316,42 +388,24 @@
 
                 if (matchingItems.length) {
                     this.list.classList.add('show');
-                    
-                    // AMÉLIORATION: Tri des résultats par pertinence
-                    matchingItems.sort((a, b) => {
-                        const aStartsWithValue = a.toLowerCase().startsWith(value);
-                        const bStartsWithValue = b.toLowerCase().startsWith(value);
-                        
-                        if (aStartsWithValue && !bStartsWithValue) return -1;
-                        if (!aStartsWithValue && bStartsWithValue) return 1;
-                        return a.localeCompare(b);
-                    });
-                    
                     matchingItems.forEach((item, index) => {
                         const div = document.createElement('div');
                         div.classList.add('autocomplete-item');
-                        
-                        // AMÉLIORATION: Mise en surbrillance du texte correspondant
+                       
+                        // Mettre en évidence la partie correspondante
                         const regex = new RegExp(`(${value})`, 'gi');
                         const highlightedText = item.replace(regex, '<b>$1</b>');
                         div.innerHTML = highlightedText;
-                        
-                        // AMÉLIORATION: Délai progressif pour l'animation
+                       
+                        // Ajouter un délai progressif pour l'animation
                         div.style.animationDelay = `${index * 50}ms`;
                         div.style.opacity = "0";
-                        div.style.animation = "fadeIn 0.3s ease-out forwards";
-                        
+                        div.style.animation = "slideInUp 0.3s ease-out forwards";
+                       
                         div.addEventListener('click', () => {
                             this.input.value = item;
                             this.list.classList.remove('show');
-                            
-                            // AMÉLIORATION: Effet de sélection
-                            this.input.style.animation = "highlightText 1s";
-                            setTimeout(() => {
-                                this.input.style.animation = "";
-                            }, 1000);
                         });
-                        
                         this.list.appendChild(div);
                     });
                 } else {
@@ -367,17 +421,13 @@
                     this.currentFocus++;
                     if (this.currentFocus >= items.length) this.currentFocus = 0;
                     this.setActive(items);
-                    e.preventDefault(); // Empêche le curseur de se déplacer
                 } else if (e.key === 'ArrowUp') {
                     this.currentFocus--;
                     if (this.currentFocus < 0) this.currentFocus = items.length - 1;
                     this.setActive(items);
-                    e.preventDefault(); // Empêche le curseur de se déplacer
                 } else if (e.key === 'Enter' && this.currentFocus > -1) {
                     e.preventDefault();
                     items[this.currentFocus].click();
-                } else if (e.key === 'Escape') {
-                    this.list.classList.remove('show');
                 }
             }
 
@@ -385,15 +435,46 @@
                 Array.from(items).forEach(item => item.classList.remove('selected'));
                 if (this.currentFocus > -1) {
                     items[this.currentFocus].classList.add('selected');
-                    // AMÉLIORATION: Défilement automatique pour rendre l'élément visible
-                    items[this.currentFocus].scrollIntoView({ block: 'nearest' });
+                    // Assurer que l'élément sélectionné est visible
+                    items[this.currentFocus].scrollIntoView({block: 'nearest'});
                 }
             }
         }
 
-        // Initialisation au chargement de la page
+        // Initialisation au chargement de la page - MODIFIÉE
         document.addEventListener('DOMContentLoaded', function() {
-            // AMÉLIORATION 10: Gestionnaire de thème intégré
+            // Données d'exemple pour l'autocomplete (à remplacer par vos données)
+            const savedUsers = <%- JSON.stringify(savedUsers) %>;
+            
+            // Initialiser l'autocomplétion
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) {
+                new Autocomplete(usernameInput, savedUsers);
+            }
+
+            // Redirection admin
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    if (this.value.toLowerCase() === 'admin') {
+                        window.location.href = '/admin/create-ticket';
+                    }
+                });
+            }
+            
+            // Animation de soumission du formulaire
+            const loginForm = document.querySelector('form');
+            const buttonText = document.getElementById('buttonText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            if (loginForm && buttonText && loadingSpinner) {
+                loginForm.addEventListener('submit', function(e) {
+                    buttonText.classList.add('hidden');
+                    loadingSpinner.classList.remove('hidden');
+                    // Ne pas annuler l'événement, laissez le formulaire se soumettre
+                });
+            }
+            
+            // Gestionnaire de thème - CORRIGÉ
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', function() {
@@ -405,22 +486,6 @@
                         // Sinon, passer au mode sombre
                         document.documentElement.classList.add('dark');
                         localStorage.setItem('color-theme', 'dark');
-                    }
-                });
-            }
-            
-            // Données d'exemple pour l'autocomplétion
-            const savedUsers = <%- JSON.stringify(savedUsers) %>;
-            
-            // Initialiser l'autocomplétion
-            const usernameInput = document.getElementById('username');
-            if (usernameInput) {
-                new Autocomplete(usernameInput, savedUsers);
-                
-                // Redirection admin (conserver cette fonctionnalité)
-                usernameInput.addEventListener('input', function() {
-                    if (this.value.toLowerCase() === 'admin') {
-                        window.location.href = '/admin/create-ticket';
                     }
                 });
             }
