@@ -806,7 +806,7 @@ async function startServer() {
         await fsPromises.mkdir(UPLOADS_DIR, { recursive: true });
         console.log('✅ Dossier uploads vérifié');
 
-        const VERSION = 'Pré-Prod 1.0.6';
+        const VERSION = 'Pré-Prod 1.0.7';
         console.log(`🚀 Version du serveur : ${VERSION}`);
 
         app.listen(process.env.PORT, () => {

@@ -6,7 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Lien vers votre fichier CSS factorisé -->
+    <link rel="stylesheet" href="/public/styles/login.css">
     
     <!-- Initialisation du thème -->
     <script>
@@ -18,196 +19,33 @@
             document.documentElement.classList.remove('dark');
         }
     </script>
-
-    <style>
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes slideInUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes shine {
-            from { 
-                background-position: -200% center; 
-            }
-            to { 
-                background-position: 200% center; 
-            }
-        }
-        
-        .page-fade-in {
-            animation: fadeIn 0.8s ease-out forwards;
-        }
-        
-        .form-slide-up {
-            animation: slideInUp 0.6s ease-out;
-            animation-delay: 0.3s;
-            opacity: 0;
-            animation-fill-mode: forwards;
-        }
-        
-        .btn-pulse {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-pulse:hover {
-            animation: pulse 1s infinite;
-        }
-        
-        .btn-shine {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn-shine::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.2) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            animation: none;
-            transition: left 0.5s ease;
-        }
-        
-        .btn-shine:hover::before {
-            left: 100%;
-            animation: shine 1s forwards;
-        }
-        
-        .autocomplete-list {
-            display: none;
-            position: absolute;
-            width: 100%;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-top: none;
-            border-radius: 0 0 0.375rem 0.375rem;
-            max-height: 200px;
-            overflow-y: auto;
-            z-index: 1000;
-            animation: slideInUp 0.3s ease-out;
-        }
-
-        .dark .autocomplete-list {
-            background: #1f2937;
-            border-color: #374151;
-            color: white;
-        }
-
-        .autocomplete-list.show {
-            display: block;
-        }
-
-        .autocomplete-item {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            color: #1f2937;
-            transition: all 0.2s ease;
-        }
-
-        .dark .autocomplete-item {
-            color: #f3f4f6;
-        }
-
-        .autocomplete-item:hover {
-            background-color: #f3f4f6;
-            transform: translateX(5px);
-        }
-
-        .dark .autocomplete-item:hover {
-            background-color: #374151;
-        }
-
-        .autocomplete-item.selected {
-            background-color: #e5e7eb;
-        }
-
-        .dark .autocomplete-item.selected {
-            background-color: #4b5563;
-        }
-
-        /* Transition du thème */
-        * {
-            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .input-focus-effect:focus {
-            transform: scale(1.02);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
-        }
-        
-        .link-hover-effect {
-            position: relative;
-        }
-        
-        .link-hover-effect::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -2px;
-            left: 0;
-            background-color: currentColor;
-            transition: width 0.3s ease;
-        }
-        
-        .link-hover-effect:hover::after {
-            width: 100%;
-        }
-        
-        /* Logo animation */
-        .logo-text {
-            background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradientFlow 5s ease infinite;
-        }
-        
-        @keyframes gradientFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* SVG icon animations */
-        .svg-icon {
-            transition: transform 0.3s;
-        }
-        
-        .svg-container:hover .svg-icon {
-            transform: translateY(-3px) rotate(5deg);
-        }
-    </style>
 </head>
 
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
-    <div class="min-h-screen flex items-center justify-center p-4 page-fade-in">
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen texture-bg">
+    <!-- Particules d'arrière-plan (visibles en mode sombre) -->
+    <div class="particle" style="top: 10%; left: 20%; width: 8px; height: 8px; animation-delay: 0s;"></div>
+    <div class="particle" style="top: 30%; left: 70%; width: 6px; height: 6px; animation-delay: 2s;"></div>
+    <div class="particle" style="top: 70%; left: 30%; width: 10px; height: 10px; animation-delay: 4s;"></div>
+    <div class="particle" style="top: 40%; left: 10%; width: 5px; height: 5px; animation-delay: 6s;"></div>
+    <div class="particle" style="top: 80%; left: 80%; width: 7px; height: 7px; animation-delay: 8s;"></div>
+    
+    <div class="min-h-screen flex items-center justify-center p-4 animate-fade-in">
         <div class="max-w-md w-full">
-            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md hover:shadow-xl transition-shadow form-slide-up">
-                <h1 class="text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white logo-text">CallFix</h1>
+            <div class="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-md card-container neumorph glow-effect animate-slide-up animate-delay-sm">
+                <!-- Circuit pattern en arrière-plan -->
+                <div class="circuit-pattern"></div>
                 
+                <!-- Logo et titre -->
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-bold text-gray-900 dark:text-white logo-text">CallFix</h1>
+                    <p class="text-gray-600 dark:text-gray-400 mt-2 animate-delay-md animate-fade-in">
+                        Plateforme de gestion de tickets
+                    </p>
+                </div>
+                
+                <!-- Formulaire de connexion -->
                 <form action="/login" method="POST" class="space-y-4">
-                    <div>
+                    <div class="animate-delay-md animate-slide-up">
                         <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
                         <div class="relative">
                             <input type="text"
@@ -221,8 +59,13 @@
                                           focus:border-blue-500 dark:focus:border-blue-400
                                           focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
                                           placeholder-gray-400 dark:placeholder-gray-500
-                                          input-focus-effect">
-                            <!-- La datalist a été supprimée car elle est redondante avec l'autocomplétion personnalisée -->
+                                          input-focus-effect"
+                                   list="usernames">
+                            <datalist id="usernames">
+                                <% savedUsers.forEach(user => { %>
+                                    <option value="<%= user %>">
+                                <% }) %>
+                            </datalist>
                         </div>
                     </div>
 
@@ -231,17 +74,17 @@
                                    hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                                    dark:focus:ring-offset-gray-800
-                                   transform transition-transform hover:scale-[1.02] active:scale-[0.98]
-                                   btn-pulse btn-shine">
+                                   btn-3d animate-delay-lg animate-slide-up">
                         Se connecter
                     </button>
                 </form>
 
-                <div class="mt-6 flex justify-center space-x-6">
+                <!-- Liens rapides -->
+                <div class="mt-8 flex justify-center space-x-6 animate-delay-lg animate-fade-in">
                     <!-- Lien "Voir les statistiques" -->
                     <a href="/stats"
                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                              flex items-center justify-center gap-2 link-hover-effect svg-container">
                         <svg class="w-5 h-5 svg-icon"
                              fill="none"
                              stroke="currentColor"
@@ -257,7 +100,7 @@
                     <!-- Bouton "Générer un Rapport" -->
                     <a href="/report"
                        class="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300
-                              flex items-center justify-center gap-2 group link-hover-effect svg-container">
+                              flex items-center justify-center gap-2 link-hover-effect svg-container">
                         <svg class="w-5 h-5 svg-icon"
                              fill="none"
                              stroke="currentColor"
@@ -270,6 +113,11 @@
                         <span>Générer un Rapport</span>
                     </a>
                 </div>
+                
+                <!-- Note de version -->
+                <div class="mt-8 text-center text-xs text-gray-500 dark:text-gray-400 animate-delay-lg animate-fade-in">
+                    Version 2.5.0 | &copy; 2025 CallFix
+                </div>
             </div>
         </div>
     </div>
@@ -277,6 +125,7 @@
     <!-- Script du gestionnaire de thème -->
     <script src="/js/themeManager.js"></script>
 
+    <!-- Script d'autocomplétion -->
     <script>
         // Classe d'autocomplétion
         class Autocomplete {
@@ -379,16 +228,34 @@
                     window.location.href = '/admin/create-ticket';
                 }
             });
-
-            // Animation lors du focus sur l'input
-            usernameInput.addEventListener('focus', function() {
-                this.classList.add('animate__animated', 'animate__pulse');
-            });
-
-            usernameInput.addEventListener('blur', function() {
-                this.classList.remove('animate__animated', 'animate__pulse');
-            });
+            
+            // Création des particules dynamiques (uniquement en mode sombre)
+            if (document.documentElement.classList.contains('dark')) {
+                createParticles();
+            }
         };
+        
+        // Fonction pour créer des particules dynamiques
+        function createParticles() {
+            const particleCount = 10;
+            const container = document.body;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Positionnement aléatoire
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.width = `${Math.random() * 6 + 3}px`;
+                particle.style.height = particle.style.width;
+                
+                // Animation avec délai aléatoire
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                container.appendChild(particle);
+            }
+        }
     </script>
 </body>
 </html>
