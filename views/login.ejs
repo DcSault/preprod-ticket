@@ -10,7 +10,7 @@
    
     <!-- Initialisation du thème - CORRIGÉ -->
     <script>
-        // Vérifier le thème préféré de l'utilisateur ou utiliser celui stocké
+        // Vérifier si le thème est déjà stocké dans localStorage
         if (localStorage.getItem('color-theme') === 'dark' || 
             (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -20,74 +20,56 @@
     </script>
 
     <style>
-        :root {
-            /* Variables de couleurs */
-            --primary: #3b82f6;
-            --primary-hover: #2563eb;
-            --primary-dark: #1d4ed8;
-            --text-light: #f3f4f6;
-            --text-dark: #1f2937;
-            --bg-light: #ffffff;
-            --bg-dark: #1f2937;
-            --border-light: #e2e8f0;
-            --border-dark: #374151;
-            
-            /* Variables d'animation */
-            --transition-speed: 0.3s;
-            --animation-timing: cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* Animations de base */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
+       
         @keyframes slideInUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        
+       
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-        
+       
         @keyframes shine {
-            from { background-position: -200% center; }
-            to { background-position: 200% center; }
+            from {
+                background-position: -200% center;
+            }
+            to {
+                background-position: 200% center;
+            }
         }
-        
-        @keyframes gradientFlow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        
-        /* Classes d'animation */
+       
         .page-fade-in {
             animation: fadeIn 0.8s ease-out forwards;
         }
-        
+       
         .form-slide-up {
             animation: slideInUp 0.6s ease-out;
             animation-delay: 0.3s;
             opacity: 0;
             animation-fill-mode: forwards;
         }
-        
-        /* Effets des boutons */
-        .btn-pulse, .btn-shine {
+       
+        .btn-pulse {
             position: relative;
             overflow: hidden;
-            transition: transform var(--transition-speed) var(--animation-timing);
         }
-        
+       
         .btn-pulse:hover {
             animation: pulse 1s infinite;
         }
-        
+       
+        .btn-shine {
+            position: relative;
+            overflow: hidden;
+        }
+       
         .btn-shine::before {
             content: "";
             position: absolute;
@@ -101,20 +83,21 @@
                 rgba(255, 255, 255, 0.2) 50%,
                 rgba(255, 255, 255, 0) 100%
             );
+            animation: none;
             transition: left 0.5s ease;
         }
-        
+       
         .btn-shine:hover::before {
             left: 100%;
             animation: shine 1s forwards;
         }
-        
-        /* Autocomplétion - CORRIGÉ */
+       
+        /* CORRECTION: Sélecteurs pour le thème sombre */
         .autocomplete-list {
             display: none;
             position: absolute;
             width: 100%;
-            background: #ffffff;
+            background: white;
             border: 1px solid #e2e8f0;
             border-top: none;
             border-radius: 0 0 0.375rem 0.375rem;
@@ -123,65 +106,59 @@
             z-index: 1000;
             animation: slideInUp 0.3s ease-out;
         }
-        
+
         html.dark .autocomplete-list {
-            background: #374151;
-            border-color: #4b5563;
-            color: #f3f4f6;
+            background: #1f2937;
+            border-color: #374151;
+            color: white;
         }
-        
+
         .autocomplete-list.show {
             display: block;
         }
-        
+
         .autocomplete-item {
             padding: 0.5rem 1rem;
             cursor: pointer;
             color: #1f2937;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
-        
+
         html.dark .autocomplete-item {
             color: #f3f4f6;
         }
-        
+
         .autocomplete-item:hover {
             background-color: #f3f4f6;
             transform: translateX(5px);
         }
-        
+
         html.dark .autocomplete-item:hover {
-            background-color: #4b5563;
+            background-color: #374151;
         }
-        
+
         .autocomplete-item.selected {
             background-color: #e5e7eb;
         }
-        
+
         html.dark .autocomplete-item.selected {
-            background-color: #6b7280;
+            background-color: #4b5563;
         }
-        
-        /* Transition globale du thème */
+
+        /* Transition du thème */
         * {
-            transition: background-color 0.5s ease, 
-                        border-color 0.5s ease, 
-                        color 0.3s ease, 
-                        transform 0.3s ease, 
-                        box-shadow 0.3s ease;
+            transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
-        /* Effet de focus pour les inputs */
+       
         .input-focus-effect:focus {
             transform: scale(1.02);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
         }
-        
-        /* Effet de survol pour les liens */
+       
         .link-hover-effect {
             position: relative;
         }
-        
+       
         .link-hover-effect::after {
             content: '';
             position: absolute;
@@ -192,59 +169,93 @@
             background-color: currentColor;
             transition: width 0.3s ease;
         }
-        
+       
         .link-hover-effect:hover::after {
             width: 100%;
         }
-        
-        /* Animation du logo */
+       
+        /* Logo animation */
         .logo-text {
-            position: relative;
-            font-weight: 800;
-            letter-spacing: 1px;
             background: linear-gradient(45deg, #3b82f6, #60a5fa, #93c5fd, #3b82f6);
             background-size: 300% 300%;
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
             animation: gradientFlow 5s ease infinite;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
-        .logo-text::after {
-            content: "CallFix";
-            position: absolute;
-            top: 2px;
-            left: 0;
-            z-index: -1;
-            opacity: 0.1;
-            filter: blur(5px);
-            background: linear-gradient(135deg, #3b82f6, #60a5fa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
+       
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
-        
-        /* Animation des icônes SVG */
+       
+        /* SVG icon animations */
         .svg-icon {
             transition: transform 0.3s;
         }
-        
+       
         .svg-container:hover .svg-icon {
             transform: translateY(-3px) rotate(5deg);
         }
         
-        /* Animation du badge de version */
+        /* Bouton de thème flottant */
+        #theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        #theme-toggle:hover {
+            transform: scale(1.1);
+        }
+        
+        #light-icon, #dark-icon {
+            position: absolute;
+            transition: opacity 0.3s ease, transform 0.5s ease;
+        }
+        
+        html.dark #light-icon {
+            opacity: 0;
+            transform: rotate(100deg);
+        }
+        
+        html.dark #dark-icon {
+            opacity: 1;
+            transform: rotate(0);
+        }
+        
+        #dark-icon {
+            opacity: 0;
+            transform: rotate(-100deg);
+        }
+        
+        /* Animation des badges de version */
         .version-badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, color 0.3s ease;
         }
         
         .version-badge:hover {
             transform: translateY(-2px);
-            color: var(--primary);
+            color: #3b82f6;
+        }
+        
+        html.dark .version-badge:hover {
+            color: #60a5fa;
         }
     </style>
 </head>
@@ -257,7 +268,7 @@
                
                 <form action="/login" method="POST" class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Victor ROSIQUE</label>
+                        <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Votre nom</label>
                         <div class="relative">
                             <input type="text"
                                    name="username"
@@ -272,12 +283,11 @@
                                           focus:ring-1 focus:ring-blue-500 dark:focus:ring-blue-400
                                           placeholder-gray-400 dark:placeholder-gray-500
                                           input-focus-effect">
-                            <!-- Le conteneur d'autocomplétion sera inséré ici -->
                         </div>
                     </div>
 
                     <button type="submit"
-                            id="loginButton"
+                            id="loginButton" 
                             class="w-full bg-blue-500 text-white px-4 py-2 rounded
                                    hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700
                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
@@ -286,7 +296,7 @@
                                    btn-pulse btn-shine">
                         <span id="buttonText">Se connecter</span>
                         <span id="loadingSpinner" class="hidden">
-                            <svg class="animate-spin h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg class="animate-spin h-5 w-5 text-white inline-block ml-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -328,7 +338,7 @@
                     </a>
                 </div>
                 
-                <!-- Informations du projet avec animation -->
+                <!-- Informations du projet avec animation - AJOUTÉ -->
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 animate__animated animate__fadeIn" style="animation-delay: 1s;">
                     <div class="text-xs text-gray-500 dark:text-gray-400">
                         <div class="flex flex-wrap justify-center gap-4 md:gap-6">
@@ -336,17 +346,17 @@
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
                                 </svg>
-                                <span>Version 1.0.2</span>
+                                <span>Version 1.0.7</span>
                             </div>
                             
                             <div class="version-badge">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                                 </svg>
-                                <span>Développé par <span class="font-medium text-blue-500 dark:text-blue-400">Votre Nom</span></span>
+                                <span>Développé par <span class="font-medium text-blue-500 dark:text-blue-400">Victor ROSIQUE</span></span>
                             </div>
                             
-                            <a href="https://github.com/DcSault" target="_blank" rel="noopener noreferrer" 
+                            <a href="https://github.com/votre-compte/callfix" target="_blank" rel="noopener noreferrer" 
                                class="version-badge hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200">
                                 <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -360,46 +370,36 @@
         </div>
     </div>
 
-    <!-- Bouton de thème flottant - CORRIGÉ -->
-    <div id="theme-toggle" class="fixed bottom-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-700 shadow-lg cursor-pointer transition-all duration-300 hover:scale-110">
-        <svg id="light-icon" class="w-6 h-6 text-yellow-500 transition-transform duration-500 dark:rotate-180 dark:opacity-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <!-- Bouton de thème flottant - AJOUTÉ -->
+    <div id="theme-toggle" class="bg-gray-200 dark:bg-gray-700">
+        <svg id="light-icon" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
         </svg>
-        <svg id="dark-icon" class="w-6 h-6 text-indigo-400 absolute top-2 left-2 transition-transform duration-500 rotate-180 opacity-0 dark:rotate-0 dark:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg id="dark-icon" class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
         </svg>
     </div>
 
-    <!-- Tous les scripts regroupés -->
+    <!-- Script du gestionnaire de thème - REMPLACÉ PAR SCRIPT INTÉGRÉ -->
     <script>
-        // Données d'exemple pour l'autocomplétion (remplacer par vos propres données)
-        const savedUsers = ['Jean Dupont', 'Marie Martin', 'Pierre Durand', 'Sophie Lefebvre', 'Thomas Bernard'];
-        
-        // Classe d'autocomplétion - CORRIGÉE
+        // Classe d'autocomplétion - VOTRE SYSTÈME ORIGINAL
         class Autocomplete {
             constructor(input, items) {
                 this.input = input;
-                this.items = items || [];
+                this.items = items;
                 this.currentFocus = -1;
                 this.setup();
             }
 
             setup() {
-                // Créer la liste d'autocomplétion
                 this.list = document.createElement('div');
-                this.list.setAttribute('class', 'autocomplete-list');
+                this.list.classList.add('autocomplete-list');
                 this.input.parentNode.appendChild(this.list);
 
-                // Ajouter les écouteurs d'événements
                 this.input.addEventListener('input', () => this.updateList());
-                this.input.addEventListener('focus', () => {
-                    if (this.input.value) this.updateList();
-                });
                 this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
-                
-                // Fermer la liste si on clique ailleurs
                 document.addEventListener('click', (e) => {
-                    if (e.target !== this.input) {
+                    if (!this.input.contains(e.target)) {
                         this.list.classList.remove('show');
                     }
                 });
@@ -423,17 +423,13 @@
                     this.list.classList.add('show');
                     matchingItems.forEach((item, index) => {
                         const div = document.createElement('div');
-                        div.setAttribute('class', 'autocomplete-item');
+                        div.classList.add('autocomplete-item');
                        
                         // Mettre en évidence la partie correspondante
-                        const startIndex = item.toLowerCase().indexOf(value);
-                        const endIndex = startIndex + value.length;
-                        const before = item.substring(0, startIndex);
-                        const match = item.substring(startIndex, endIndex);
-                        const after = item.substring(endIndex);
-                        
-                        div.innerHTML = before + '<strong>' + match + '</strong>' + after;
-                        
+                        const regex = new RegExp(`(${value})`, 'gi');
+                        const highlightedText = item.replace(regex, '<b>$1</b>');
+                        div.innerHTML = highlightedText;
+                       
                         // Ajouter un délai progressif pour l'animation
                         div.style.animationDelay = `${index * 50}ms`;
                         div.style.opacity = "0";
@@ -443,7 +439,6 @@
                             this.input.value = item;
                             this.list.classList.remove('show');
                         });
-                        
                         this.list.appendChild(div);
                     });
                 } else {
@@ -456,81 +451,83 @@
                 if (!items.length) return;
 
                 if (e.key === 'ArrowDown') {
-                    e.preventDefault(); // Empêcher le défilement de la page
                     this.currentFocus++;
                     if (this.currentFocus >= items.length) this.currentFocus = 0;
                     this.setActive(items);
                 } else if (e.key === 'ArrowUp') {
-                    e.preventDefault(); // Empêcher le défilement de la page
                     this.currentFocus--;
                     if (this.currentFocus < 0) this.currentFocus = items.length - 1;
                     this.setActive(items);
                 } else if (e.key === 'Enter' && this.currentFocus > -1) {
                     e.preventDefault();
-                    if (items[this.currentFocus]) {
-                        this.input.value = items[this.currentFocus].textContent;
-                        this.list.classList.remove('show');
-                    }
-                } else if (e.key === 'Escape') {
-                    this.list.classList.remove('show');
+                    items[this.currentFocus].click();
                 }
             }
 
             setActive(items) {
-                for (let i = 0; i < items.length; i++) {
-                    items[i].classList.remove('selected');
-                }
-                if (this.currentFocus >= 0 && this.currentFocus < items.length) {
+                Array.from(items).forEach(item => item.classList.remove('selected'));
+                if (this.currentFocus > -1) {
                     items[this.currentFocus].classList.add('selected');
-                    // Faire défiler jusqu'à l'élément sélectionné si nécessaire
-                    items[this.currentFocus].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    // Assurer que l'élément sélectionné est visible
+                    items[this.currentFocus].scrollIntoView({block: 'nearest'});
                 }
             }
         }
 
-        // Initialisation au chargement du document
+        // Initialisation au chargement de la page - MODIFIÉE
         document.addEventListener('DOMContentLoaded', function() {
+            // Données d'exemple pour l'autocomplete (à remplacer par vos données)
+            const savedUsers = ['Jean Dupont', 'Marie Martin', 'Thomas Bernard', 'Sophie Dubois', 'Lucas Petit', 'Emma Leroy'];
+            
             // Initialiser l'autocomplétion
             const usernameInput = document.getElementById('username');
             if (usernameInput) {
                 new Autocomplete(usernameInput, savedUsers);
             }
 
-            // Animations des inputs
-            const inputs = document.querySelectorAll('input');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
+            // Redirection admin
+            if (usernameInput) {
+                usernameInput.addEventListener('input', function() {
+                    if (this.value.toLowerCase() === 'admin') {
+                        window.location.href = '/admin/create-ticket';
+                    }
+                });
+            }
+
+            // Animation lors du focus sur l'input
+            if (usernameInput) {
+                usernameInput.addEventListener('focus', function() {
                     this.classList.add('animate__animated', 'animate__pulse');
                 });
-                
-                input.addEventListener('blur', function() {
+
+                usernameInput.addEventListener('blur', function() {
                     this.classList.remove('animate__animated', 'animate__pulse');
                 });
-            });
+            }
             
-            // Gestion du formulaire et indicateur de chargement
+            // Animation de soumission du formulaire
             const loginForm = document.querySelector('form');
-            const loginButton = document.getElementById('loginButton');
             const buttonText = document.getElementById('buttonText');
             const loadingSpinner = document.getElementById('loadingSpinner');
             
             if (loginForm && buttonText && loadingSpinner) {
                 loginForm.addEventListener('submit', function(e) {
-                    // Afficher l'indicateur de chargement
                     buttonText.classList.add('hidden');
                     loadingSpinner.classList.remove('hidden');
+                    // Ne pas annuler l'événement, laissez le formulaire se soumettre
                 });
             }
             
-            // Gestionnaire du bouton de thème - CORRIGÉ
+            // Gestionnaire de thème - CORRIGÉ
             const themeToggle = document.getElementById('theme-toggle');
             if (themeToggle) {
                 themeToggle.addEventListener('click', function() {
-                    // Basculer le thème
+                    // Si en mode sombre, passer au mode clair
                     if (document.documentElement.classList.contains('dark')) {
                         document.documentElement.classList.remove('dark');
                         localStorage.setItem('color-theme', 'light');
                     } else {
+                        // Sinon, passer au mode sombre
                         document.documentElement.classList.add('dark');
                         localStorage.setItem('color-theme', 'dark');
                     }
