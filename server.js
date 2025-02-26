@@ -1,824 +1,299 @@
-require('dotenv').config();
-const express = require('express');
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const fsPromises = require('fs').promises;
-const bodyParser = require('body-parser');
-const session = require('express-session');
-const { Op } = require('sequelize');
+# Fichier EJS (index.ejs)
 
+```ejs
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Système de Connexion Avancé</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- Importation de Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="texture-bg">
+    <!-- Effets de particules pour l'arrière-plan -->
+    <div class="circuit-pattern"></div>
+    <% for(let i = 0; i < 8; i++) { %>
+        <div class="particle" style="
+            top: <%= Math.random() * 100 %>%; 
+            left: <%= Math.random() * 100 %>%; 
+            width: <%= Math.random() * 100 + 50 %>px; 
+            height: <%= Math.random() * 100 + 50 %>px; 
+            animation-delay: <%= Math.random() * 5 %>s;
+            animation-duration: <%= Math.random() * 10 + 10 %>s;
+        "></div>
+    <% } %>
 
-// Import des modèles
-const { sequelize, User, Ticket, Message, SavedField } = require('./models');
+    <div class="page-fade-in min-h-screen flex flex-col items-center justify-center p-4">
+        <div class="card-container neumorph glow-effect bg-white dark:bg-gray-800 p-8 rounded-xl max-w-md w-full shadow-lg form-slide-up">
+            <!-- En-tête avec Logo -->
+            <div class="text-center mb-8">
+                <h1 class="logo-text text-3xl font-bold">TechConnect</h1>
+                <div class="typing-effect mt-2 text-gray-600 dark:text-gray-300">Bienvenue sur votre portail</div>
+            </div>
+            
+            <!-- Formulaire de connexion -->
+            <form action="/login" method="POST" id="loginForm" class="space-y-6">
+                <% if(locals.errorMessage) { %>
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                        <span class="block sm:inline"><%= errorMessage %></span>
+                    </div>
+                <% } %>
+                
+                <div class="relative">
+                    <label for="username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <i class="fas fa-user text-primary mr-2"></i>Nom d'utilisateur
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            class="input-focus-effect w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            placeholder="Entrez votre nom d'utilisateur" 
+                            required
+                            list="usernamesList"
+                            autocomplete="off"
+                        >
+                        <div class="input-border-effect absolute bottom-0 left-0 h-0.5 w-full bg-gray-200 dark:bg-gray-600">
+                            <div class="absolute inset-0 bg-primary transform scale-x-0 origin-left transition-transform duration-300"></div>
+                        </div>
+                        <!-- Datalist pour suggestion d'autocomplétion -->
+                        <datalist id="usernamesList">
+                            <% if(locals.recentUsers) { %>
+                                <% recentUsers.forEach(user => { %>
+                                    <option value="<%= user %>">
+                                <% }); %>
+                            <% } %>
+                        </datalist>
+                    </div>
+                    <div id="autocomplete-container" class="relative">
+                        <div id="autocomplete-list" class="autocomplete-list"></div>
+                    </div>
+                </div>
+                
+                <div class="relative">
+                    <label for="password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <i class="fas fa-lock text-primary mr-2"></i>Mot de passe
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="input-focus-effect w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                            placeholder="Entrez votre mot de passe" 
+                            required
+                        >
+                        <button 
+                            type="button" 
+                            class="absolute inset-y-0 right-0 pr-3 flex items-center" 
+                            id="togglePassword"
+                        >
+                            <i class="fas fa-eye text-gray-400 hover:text-primary transition-colors duration-200"></i>
+                        </button>
+                        <div class="input-border-effect absolute bottom-0 left-0 h-0.5 w-full bg-gray-200 dark:bg-gray-600">
+                            <div class="absolute inset-0 bg-primary transform scale-x-0 origin-left transition-transform duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input 
+                            id="remember-me" 
+                            name="remember-me" 
+                            type="checkbox" 
+                            class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                        >
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+                    <div>
+                        <a href="/forgot-password" class="link-hover-effect text-sm text-primary hover:text-primary-dark">
+                            Mot de passe oublié?
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <button 
+                        type="submit" 
+                        class="btn-3d w-full py-2 px-4 bg-primary hover:bg-primary-dark text-white rounded-lg transition-all duration-200 font-semibold"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>Se connecter
+                    </button>
+                </div>
+                
+                <!-- Séparateur -->
+                <div class="relative flex items-center justify-center mt-6">
+                    <div class="border-t border-gray-300 dark:border-gray-600 w-full"></div>
+                    <div class="absolute bg-white dark:bg-gray-800 px-3 text-sm text-gray-500 dark:text-gray-400">
+                        ou continuer avec
+                    </div>
+                </div>
+                
+                <!-- Boutons de connexion sociale -->
+                <div class="flex justify-center space-x-4 mt-6">
+                    <a href="/auth/google" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                        <svg class="svg-icon h-6 w-6 text-red-500" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+                        </svg>
+                    </a>
+                    <a href="/auth/facebook" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                        <svg class="svg-icon h-6 w-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                        </svg>
+                    </a>
+                    <a href="/auth/github" class="svg-container flex items-center justify-center p-2 border border-gray-300 dark:border-gray-600 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                        <svg class="svg-icon h-6 w-6 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/>
+                        </svg>
+                    </a>
+                </div>
+                
+                <!-- Lien d'inscription -->
+                <div class="text-center mt-6">
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Vous n'avez pas de compte? 
+                        <a href="/register" class="link-hover-effect text-primary font-medium hover:text-primary-dark">
+                            S'inscrire
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Bouton de changement de thème (clair/sombre) -->
+        <button id="themeToggle" class="mt-6 p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary animate-pulse">
+            <i class="fas fa-sun text-yellow-500 dark:hidden"></i>
+            <i class="fas fa-moon text-blue-300 hidden dark:block"></i>
+        </button>
+        
+        <!-- Pied de page -->
+        <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            <p>&copy; <%= new Date().getFullYear() %> TechConnect. Tous droits réservés.</p>
+            <div class="mt-2 flex justify-center space-x-4">
+                <a href="/privacy" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Confidentialité</a>
+                <a href="/terms" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Conditions</a>
+                <a href="/contact" class="link-hover-effect hover:text-gray-700 dark:hover:text-gray-300">Contact</a>
+            </div>
+        </div>
+    </div>
 
-const app = express();
-const UPLOADS_DIR = path.join(__dirname, process.env.UPLOAD_DIR || 'uploads');
-
-// Middleware Configuration
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use('/uploads', express.static(process.env.UPLOAD_DIR));
-app.use(express.static('public'));
-app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true
-}));
-
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
-// Multer Configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, UPLOADS_DIR),
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
-const upload = multer({ 
-    storage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
-        if (extname && mimetype) {
-            return cb(null, true);
-        }
-        cb(new Error('Images only'));
-    }
-});
-
-// Authentication Middleware
-const requireLogin = (req, res, next) => {
-    if (!req.session.username) {
-        return res.redirect('/login');
-    }
-    next();
-};
-
-// Fonction pour archiver les tickets anciens
-async function archiveOldTickets() {
-    try {
-        const tickets = await Ticket.findAll({
-            where: {
-                isArchived: false,
-                createdAt: {
-                    [Op.lt]: new Date(new Date() - 24 * 60 * 60 * 1000) // Tickets de plus de 24 heures
-                }
+    <script>
+        // Script pour le thème clair/sombre
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.documentElement;
+            
+            // Vérifiez les préférences utilisateur ou le stockage local
+            const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            const savedTheme = localStorage.getItem('theme');
+            
+            if (savedTheme === 'dark' || (!savedTheme && darkModeMediaQuery.matches)) {
+                body.classList.add('dark');
             }
-        });
-
-        for (const ticket of tickets) {
-            await ticket.update({ isArchived: true, archivedAt: new Date(), archivedBy: 'system' });
-        }
-    } catch (error) {
-        console.error('Erreur lors de l\'archivage des tickets:', error);
-    }
-}
-
-// Appel de la fonction toutes les 24 heures
-setInterval(archiveOldTickets, 24 * 60 * 60 * 1000);
-
-// Routes d'authentification
-app.get('/login', async (req, res) => {
-    try {
-        const users = await User.findAll();
-        res.render('login', { savedUsers: users.map(u => u.username) });
-    } catch (error) {
-        console.error('Erreur accès login:', error);
-        res.render('login', { savedUsers: [] });
-    }
-});
-
-app.post('/login', async (req, res) => {
-    const { username } = req.body;
-    if (username?.trim()) {
-        try {
-            await User.findOrCreate({
-                where: { username: username.trim() }
+            
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('dark');
+                const theme = body.classList.contains('dark') ? 'dark' : 'light';
+                localStorage.setItem('theme', theme);
             });
-            req.session.username = username.trim();
-            res.redirect('/');
-        } catch (error) {
-            console.error('Erreur création utilisateur:', error);
-            res.redirect('/login');
-        }
-    } else {
-        res.redirect('/login');
-    }
-});
-
-app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
-});
-
-// Routes principales
-app.get('/', requireLogin, async (req, res) => {
-    try {
-        const tickets = await Ticket.findAll({
-            include: [Message],
-            where: { isArchived: false },
-            order: [['createdAt', 'DESC']]
-        });
-
-        const savedFields = await SavedField.findAll();
-        
-        res.render('index', {
-            tickets,
-            savedFields: {
-                callers: savedFields.filter(f => f.type === 'caller').map(f => f.value),
-                reasons: savedFields.filter(f => f.type === 'reason').map(f => f.value),
-                tags: savedFields.filter(f => f.type === 'tag').map(f => f.value)
-            },
-            username: req.session.username
-        });
-    } catch (error) {
-        console.error('Erreur page principale:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-// Routes des tickets
-app.post('/api/tickets', requireLogin, async (req, res) => {
-    try {
-        const tags = req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : [];
-        
-        const ticket = await Ticket.create({
-            caller: req.body.caller,
-            reason: req.body.reason || '',
-            tags: tags,
-            status: 'open',
-            isGLPI: req.body.isGLPI === 'true',
-            isBlocking: req.body.isBlocking === 'true',
-            createdBy: req.session.username
-        });
-
-        if (!ticket.isGLPI) {
-            await Promise.all([
-                SavedField.findOrCreate({ where: { type: 'caller', value: req.body.caller }}),
-                req.body.reason && SavedField.findOrCreate({ where: { type: 'reason', value: req.body.reason }}),
-                ...tags.map(tag => SavedField.findOrCreate({ where: { type: 'tag', value: tag }}))
-            ]);
-        }
-
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erreur création ticket:', error);
-        res.status(500).send('Erreur lors de la création du ticket');
-    }
-});
-
-app.get('/ticket/:id', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findByPk(req.params.id, {
-            include: [Message]
-        });
-        
-        console.log('Ticket with messages:', ticket); // Vérifiez les messages associés
-        
-        if (!ticket || ticket.isGLPI) {
-            return res.redirect('/');
-        }
-
-        res.render('ticket', { ticket, username: req.session.username });
-    } catch (error) {
-        console.error('Erreur détails ticket:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-app.get('/ticket/:id/edit', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findByPk(req.params.id);
-        if (!ticket) {
-            return res.redirect('/');
-        }
-
-        const savedFields = await SavedField.findAll();
-
-        res.render('edit-ticket', { 
-            ticket,
-            savedFields: {
-                callers: savedFields.filter(f => f.type === 'caller').map(f => f.value),
-                reasons: savedFields.filter(f => f.type === 'reason').map(f => f.value),
-                tags: savedFields.filter(f => f.type === 'tag').map(f => f.value)
-            },
-            username: req.session.username
-        });
-    } catch (error) {
-        console.error('Erreur page édition:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-app.post('/api/tickets/:id/edit', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findByPk(req.params.id);
-        
-        if (!ticket) {
-            return res.redirect('/');
-        }
-
-        const updatedData = {
-            caller: req.body.caller,
-            reason: req.body.isGLPI === 'true' ? '' : (req.body.reason || ''),
-            tags: req.body.isGLPI === 'true' ? [] : (req.body.tags ? req.body.tags.split(',').map(tag => tag.trim()) : []),
-            isGLPI: req.body.isGLPI === 'true',
-            isBlocking: req.body.isBlocking === 'true',
-            lastModifiedBy: req.session.username,
-            lastModifiedAt: new Date()
-        };
-
-        if (!updatedData.isGLPI) {
-            await Promise.all([
-                SavedField.findOrCreate({ where: { type: 'caller', value: req.body.caller }}),
-                req.body.reason && SavedField.findOrCreate({ where: { type: 'reason', value: req.body.reason }})
-            ]);
-        }
-
-        await ticket.update(updatedData);
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erreur modification ticket:', error);
-        res.status(500).send('Erreur lors de la modification du ticket');
-    }
-});
-
-app.post('/api/tickets/:id/delete', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findByPk(req.params.id, {
-            include: [Message]
-        });
-
-        if (ticket) {
-            // Supprimer les fichiers images associés
-            for (const message of ticket.Messages) {
-                if (message.type === 'image' && message.content.startsWith('/uploads/')) {
-                    const imagePath = path.join(__dirname, message.content);
-                    try {
-                        await fsPromises.unlink(imagePath);
-                    } catch (err) {
-                        console.error('Erreur suppression image:', err);
-                    }
-                }
-            }
-            await ticket.destroy();
-        }
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erreur suppression ticket:', error);
-        res.status(500).send('Erreur lors de la suppression du ticket');
-    }
-});
-
-app.post('/api/tickets/:id/archive', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findByPk(req.params.id);
-        
-        if (!ticket) {
-            return res.status(404).send('Ticket non trouvé');
-        }
-
-        await ticket.update({ isArchived: true, archivedAt: new Date(), archivedBy: req.session.username });
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erreur lors de l\'archivage:', error);
-        res.status(500).send('Erreur lors de l\'archivage');
-    }
-});
-
-// Messages
-app.post('/api/tickets/:id/messages', requireLogin, upload.single('image'), async (req, res) => {
-    try {
-        console.log('Request body:', req.body); // Vérifiez le corps de la requête
-        console.log('Request file:', req.file); // Vérifiez le fichier uploadé
-        const ticket = await Ticket.findByPk(req.params.id);
-        
-        if (!ticket || ticket.isGLPI) {
-            return res.status(404).send('Ticket non trouvé ou ticket GLPI');
-        }
-
-        const message = await Message.create({
-            TicketId: ticket.id,
-            content: req.file ? `/uploads/${req.file.filename}` : req.body.content,
-            type: req.file ? 'image' : 'text',
-            author: req.session.username
-        });
-
-        console.log('Message created:', message); // Vérifiez le message créé
-        
-        res.redirect(`/ticket/${req.params.id}`);
-    } catch (error) {
-        console.error('Erreur création message:', error);
-        res.status(500).send('Erreur ajout message');
-    }
-});
-
-// Archives
-app.get('/archives', requireLogin, async (req, res) => {
-    try {
-        let whereClause = { isArchived: true };
-        const { search, filter, value, startDate, endDate } = req.query;
-
-        if (startDate || endDate) {
-            whereClause.createdAt = {};
-            if (startDate) whereClause.createdAt[Op.gte] = new Date(startDate);
-            if (endDate) {
-                const endDateTime = new Date(endDate);
-                endDateTime.setHours(23, 59, 59, 999);
-                whereClause.createdAt[Op.lte] = endDateTime;
-            }
-        }
-
-        if (search) {
-            whereClause[Op.or] = [
-                { caller: { [Op.iLike]: `%${search}%` }},
-                { reason: { [Op.iLike]: `%${search}%` }},
-                { tags: { [Op.overlap]: [search] }}
-            ];
-        }
-
-        const archives = await Ticket.findAll({
-            where: whereClause,
-            include: [Message],
-            order: [['createdAt', 'DESC']]
-        });
-
-        const savedFields = await SavedField.findAll();
-
-        res.render('archives', {
-            archives,
-            savedFields: {
-                callers: savedFields.filter(f => f.type === 'caller').map(f => f.value),
-                reasons: savedFields.filter(f => f.type === 'reason').map(f => f.value),
-                tags: savedFields.filter(f => f.type === 'tag').map(f => f.value)
-            },
-            search,
-            filter,
-            value,
-            startDate,
-            endDate
-        });
-    } catch (error) {
-        console.error('Erreur archives:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-app.get('/api/archives/:id/details', requireLogin, async (req, res) => {
-    try {
-        const ticket = await Ticket.findOne({
-            where: { 
-                id: req.params.id,
-                isArchived: true
-            },
-            include: [Message]
-        });
-        
-        if (!ticket) {
-            return res.status(404).json({ error: 'Archive non trouvée' });
-        }
-
-        res.json(ticket);
-    } catch (error) {
-        console.error('Erreur détails archive:', error);
-        res.status(500).json({ error: 'Erreur serveur' });
-    }
-});
-
-// Stats
-app.get('/stats', async (req, res) => {
-    try {
-        const tickets = await Ticket.findAll({
-            order: [['createdAt', 'DESC']]
-        });
-
-        const stats = await processStats(tickets);
-        res.render('stats', { stats });
-    } catch (error) {
-        console.error('Erreur stats:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-// Route pour afficher la page de rapport
-app.get('/report', async (req, res) => {
-    try {
-        const defaultDate = new Date();
-        const tickets = await Ticket.findAll({
-            include: [Message],
-            where: {
-                createdAt: {
-                    [Op.gte]: new Date(defaultDate.setHours(0, 0, 0, 0)),
-                    [Op.lte]: new Date(defaultDate.setHours(23, 59, 59, 999))
-                }
-            },
-            order: [['createdAt', 'DESC']]
-        });
-
-        res.render('report', { 
-            tickets, 
-            username: 'Visiteur', // Valeur par défaut pour les visiteurs
-            currentDate: defaultDate
-        });
-    } catch (error) {
-        console.error('Erreur génération rapport:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-// Route API pour générer les données du rapport
-app.get('/api/report-data', async (req, res) => {
-    try {
-        const requestDate = req.query.date ? new Date(req.query.date) : new Date();
-        const startDate = new Date(requestDate);
-        startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(requestDate);
-        endDate.setHours(23, 59, 59, 999);
-
-        const tickets = await Ticket.findAll({
-            where: {
-                createdAt: {
-                    [Op.between]: [startDate, endDate]
-                }
-            }
-        });
-
-        if (tickets.length === 0) {
-            return res.json({
-                total: 0,
-                glpi: 0,
-                blocking: 0,
-                hourlyDistribution: Array(24).fill(0),
-                morningTickets: 0,
-                afternoonTickets: 0,
-                topCallers: {},
-                topTags: {}
+            
+            // Script pour afficher/masquer le mot de passe
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+            
+            togglePassword.addEventListener('click', () => {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Change l'icône
+                const icon = togglePassword.querySelector('i');
+                icon.classList.toggle('fa-eye');
+                icon.classList.toggle('fa-eye-slash');
             });
-        }
-
-        const stats = {
-            total: tickets.length,
-            glpi: tickets.filter(t => t.isGLPI).length,
-            blocking: tickets.filter(t => t.isBlocking).length,
-            hourlyDistribution: Array(24).fill(0),
-            morningTickets: 0,
-            afternoonTickets: 0,
-            topCallers: {},
-            topTags: {}
-        };
-
-        tickets.forEach(ticket => {
-            const ticketDate = new Date(ticket.createdAt);
-            const hour = ticketDate.getHours();
-
-            stats.hourlyDistribution[hour]++;
-
-            if (hour < 12) stats.morningTickets++;
-            else stats.afternoonTickets++;
-
-            stats.topCallers[ticket.caller] = (stats.topCallers[ticket.caller] || 0) + 1;
-
-            if (ticket.tags && Array.isArray(ticket.tags)) {
-                ticket.tags.forEach(tag => {
-                    stats.topTags[tag] = (stats.topTags[tag] || 0) + 1;
-                });
-            }
-        });
-
-        res.json(stats);
-    } catch (error) {
-        console.error('Erreur complète:', error);
-        res.status(500).json({
-            error: 'Erreur serveur',
-            message: error.message,
-            stack: error.stack
-        });
-    }
-});
-
-app.get('/api/report', async (req, res) => {
-    const date = new Date(req.query.date);
-    const stats = await getReportStats(date);
-    res.json(stats);
-  });
-  
-  async function getReportStats(date) {
-    // Statistiques quotidiennes
-    const dayStart = new Date(date);
-    dayStart.setHours(0,0,0,0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23,59,59,999);
-  
-    const tickets = await Ticket.findAll({
-      where: {
-        createdAt: {
-          [Op.between]: [dayStart, dayEnd]
-        }
-      }
-    });
-  
-    // Calculer les ratios et tranches horaires
-    const morningTickets = tickets.filter(t => new Date(t.createdAt).getHours() < 12);
-    const afternoonTickets = tickets.filter(t => new Date(t.createdAt).getHours() >= 12);
-  
-    const hourlyDistribution = Array(24).fill(0);
-    tickets.forEach(t => {
-      const hour = new Date(t.createdAt).getHours();
-      hourlyDistribution[hour]++;
-    });
-  
-    return {
-      total: tickets.length,
-      glpi: tickets.filter(t => t.isGLPI).length,
-      blocking: tickets.filter(t => t.isBlocking).length,
-      morningRatio: morningTickets.length / tickets.length,
-      afternoonRatio: afternoonTickets.length / tickets.length,
-      hourlyDistribution,
-      topCallers: getTopCallers(tickets),
-      topTags: getTopTags(tickets),
-      charts: generateChartsSVG(tickets)
-    };
-  }
-
-// Delete saved field
-app.post('/api/saved-fields/delete', requireLogin, async (req, res) => {
-    try {
-        const { field, value } = req.body;
-        await SavedField.destroy({
-            where: { 
-                type: field,
-                value: value
-            }
-        });
-        res.redirect('/');
-    } catch (error) {
-        console.error('Erreur suppression champ:', error);
-        res.status(500).send('Erreur lors de la suppression');
-    }
-});
-
-// Fonction pour générer les statistiques
-async function processStats(tickets) {
-    const now = new Date();
-    now.setHours(23, 59, 59, 999);
-    
-    const stats = {
-        day: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
-        week: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
-        month: { labels: [], data: [], glpiData: [], blockingData: [], total: 0, glpi: 0, blocking: 0 },
-        detailedData: [],
-        topTags: [],
-        topCallers: []
-    };
-
-    // Create maps for daily counts
-    const dailyCounts = new Map();
-    const dailyGLPICounts = new Map();
-    const dailyBlockingCounts = new Map();
-
-    // Initialize last 30 days
-    for (let i = 29; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        date.setHours(0, 0, 0, 0);
-        const dateStr = date.toLocaleDateString('fr-FR');
-        dailyCounts.set(dateStr, 0);
-        dailyGLPICounts.set(dateStr, 0);
-        dailyBlockingCounts.set(dateStr, 0);
-        stats.day.labels.push(dateStr);
-    }
-
-    // Process each ticket
-    const tagStats = {};
-    const callerStats = {};
-
-    tickets.forEach(ticket => {
-        const ticketDate = new Date(ticket.createdAt);
-        ticketDate.setHours(0, 0, 0, 0);
-        const dateStr = ticketDate.toLocaleDateString('fr-FR');
-
-        stats.detailedData.push({
-            id: ticket.id,
-            date: ticket.createdAt,
-            caller: ticket.caller,
-            tags: ticket.tags,
-            isGLPI: ticket.isGLPI,
-            isBlocking: ticket.isBlocking
-        });
-
-        if (dailyCounts.has(dateStr)) {
-            dailyCounts.set(dateStr, (dailyCounts.get(dateStr) || 0) + 1);
-            if (ticket.isGLPI) {
-                dailyGLPICounts.set(dateStr, (dailyGLPICounts.get(dateStr) || 0) + 1);
-            }
-            if (ticket.isBlocking) {
-                dailyBlockingCounts.set(dateStr, (dailyBlockingCounts.get(dateStr) || 0) + 1);
-            }
-        }
-
-        // Count tags
-        if (ticket.tags && Array.isArray(ticket.tags)) {
-            ticket.tags.forEach(tag => {
-                tagStats[tag] = (tagStats[tag] || 0) + 1;
+            
+            // Auto-complétion personnalisée
+            const usernameInput = document.getElementById('username');
+            const autocompleteList = document.getElementById('autocomplete-list');
+            const users = Array.from(document.querySelectorAll('#usernamesList option')).map(option => option.value);
+            
+            usernameInput.addEventListener('input', function() {
+                const inputVal = this.value.toLowerCase();
+                
+                // Effacer la liste actuelle
+                autocompleteList.innerHTML = '';
+                
+                if (inputVal.length < 1) {
+                    autocompleteList.classList.remove('show');
+                    return;
+                }
+                
+                // Filtrer les suggestions
+                const suggestions = users.filter(user => 
+                    user.toLowerCase().includes(inputVal)
+                );
+                
+                if (suggestions.length > 0) {
+                    autocompleteList.classList.add('show');
+                    
+                    suggestions.forEach(suggestion => {
+                        const item = document.createElement('div');
+                        item.className = 'autocomplete-item';
+                        
+                        // Mettre en surbrillance le texte correspondant
+                        const regex = new RegExp(`(${inputVal})`, 'gi');
+                        const highlightedText = suggestion.replace(regex, '<strong>$1</strong>');
+                        
+                        item.innerHTML = highlightedText;
+                        
+                        item.addEventListener('click', function() {
+                            usernameInput.value = suggestion;
+                            autocompleteList.classList.remove('show');
+                        });
+                        
+                        autocompleteList.appendChild(item);
+                    });
+                } else {
+                    autocompleteList.classList.remove('show');
+                }
             });
-        }
-
-        // Count callers
-        if (ticket.caller) {
-            callerStats[ticket.caller] = (callerStats[ticket.caller] || 0) + 1;
-        }
-    });
-
-    // Fill day data arrays
-    stats.day.labels.forEach(dateStr => {
-        stats.day.data.push(dailyCounts.get(dateStr) || 0);
-        stats.day.glpiData.push(dailyGLPICounts.get(dateStr) || 0);
-        stats.day.blockingData.push(dailyBlockingCounts.get(dateStr) || 0);
-    });
-
-    // Calculate weekly statistics
-    const weekStart = new Date(now);
-    weekStart.setDate(weekStart.getDate() - (weekStart.getDay() || 7) + 1);
-    weekStart.setHours(0, 0, 0, 0);
-
-    for (let i = 3; i >= 0; i--) {
-        const start = new Date(weekStart);
-        start.setDate(start.getDate() - (i * 7));
-        const end = new Date(start);
-        end.setDate(end.getDate() + 6);
-        
-        const weekLabel = `${start.toLocaleDateString('fr-FR')} - ${end.toLocaleDateString('fr-FR')}`;
-        stats.week.labels.push(weekLabel);
-        
-        const weekTickets = tickets.filter(ticket => {
-            const ticketDate = new Date(ticket.createdAt);
-            return ticketDate >= start && ticketDate <= end;
+            
+            // Fermer l'autocomplétion quand on clique ailleurs
+            document.addEventListener('click', function(e) {
+                if (e.target !== usernameInput && e.target !== autocompleteList) {
+                    autocompleteList.classList.remove('show');
+                }
+            });
+            
+            // Animation des particules
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                // Animation différente pour chaque particule
+                const randomDelay = Math.random() * 5;
+                const randomDuration = Math.random() * 10 + 10;
+                
+                particle.style.animationDelay = `${randomDelay}s`;
+                particle.style.animationDuration = `${randomDuration}s`;
+            });
+            
+            // Validation du formulaire
+            const loginForm = document.getElementById('loginForm');
+            loginForm.addEventListener('submit', function(e) {
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+                
+                if (username === '' || password === '') {
+                    e.preventDefault();
+                    alert('Veuillez remplir tous les champs');
+                }
+            });
         });
-        
-        stats.week.data.push(weekTickets.length);
-        stats.week.glpiData.push(weekTickets.filter(t => t.isGLPI).length);
-        stats.week.blockingData.push(weekTickets.filter(t => t.isBlocking).length);
-    }
-
-    // Calculate monthly statistics
-    for (let i = 11; i >= 0; i--) {
-        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
-        
-        const monthLabel = monthStart.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
-        stats.month.labels.push(monthLabel);
-        
-        const monthTickets = tickets.filter(ticket => {
-            const ticketDate = new Date(ticket.createdAt);
-            return ticketDate >= monthStart && ticketDate <= monthEnd;
-        });
-        
-        stats.month.data.push(monthTickets.length);
-        stats.month.glpiData.push(monthTickets.filter(t => t.isGLPI).length);
-        stats.month.blockingData.push(monthTickets.filter(t => t.isBlocking).length);
-    }
-
-    // Calculate totals
-    ['day', 'week', 'month'].forEach(period => {
-        stats[period].total = stats[period].data.reduce((a, b) => a + b, 0);
-        stats[period].glpi = stats[period].glpiData.reduce((a, b) => a + b, 0);
-        stats[period].blocking = stats[period].blockingData.reduce((a, b) => a + b, 0);
-    });
-
-    // Calculate top tags and callers
-    stats.topTags = Object.entries(tagStats)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-    stats.topCallers = Object.entries(callerStats)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-    return stats;
-}
-
-// Gestion des erreurs globales
-app.use((err, req, res, next) => {
-    console.error('Erreur non gérée:', err);
-    res.status(500).send('Erreur serveur interne');
-});
-
-// Route pour afficher le formulaire de création de ticket personnalisé (accessible à tous)
-app.get('/admin/create-ticket', async (req, res) => {
-    try {
-        const savedFields = await SavedField.findAll();
-        res.render('admin/create-ticket', {
-            savedFields: {
-                callers: savedFields.filter(f => f.type === 'caller').map(f => f.value),
-                reasons: savedFields.filter(f => f.type === 'reason').map(f => f.value),
-                tags: savedFields.filter(f => f.type === 'tag').map(f => f.value)
-            },
-            username: 'Admin' // Vous pouvez définir un nom d'utilisateur par défaut
-        });
-    } catch (error) {
-        console.error('Erreur lors de l\'affichage du formulaire admin:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-app.get('/api/report', async (req, res) => {
-    const date = new Date(req.query.date);
-    const stats = await getReportStats(date);
-    res.json(stats);
-  });
-  
-  async function getReportStats(date) {
-    // Statistiques quotidiennes
-    const dayStart = new Date(date);
-    dayStart.setHours(0,0,0,0);
-    const dayEnd = new Date(date);
-    dayEnd.setHours(23,59,59,999);
-
-    const tickets = await Ticket.findAll({
-        where: {
-            createdAt: {
-                [Op.between]: [dayStart, dayEnd]
-            }
-        }
-    });
-
-    // Calculer les ratios et tranches horaires
-    const morningTickets = tickets.filter(t => new Date(t.createdAt).getHours() < 12);
-    const afternoonTickets = tickets.filter(t => new Date(t.createdAt).getHours() >= 12);
-
-    const hourlyDistribution = Array(24).fill(0);
-    tickets.forEach(t => {
-        const hour = new Date(t.createdAt).getHours();
-        hourlyDistribution[hour]++;
-    });
-
-    return {
-        total: tickets.length,
-        glpi: tickets.filter(t => t.isGLPI).length,
-        blocking: tickets.filter(t => t.isBlocking).length,
-        morningRatio: morningTickets.length / tickets.length,
-        afternoonRatio: afternoonTickets.length / tickets.length,
-        hourlyDistribution,
-        topCallers: getTopCallers(tickets),
-        topTags: getTopTags(tickets),
-        charts: generateChartsSVG(tickets)
-    };
-}
-
-// Route pour traiter la création du ticket personnalisé (accessible à tous)
-app.post('/admin/create-ticket', async (req, res) => {
-    try {
-        const { caller, reason, tags, status, isGLPI, createdAt, createdBy } = req.body;
-
-        const ticket = await Ticket.create({
-            caller,
-            reason: reason || '',
-            tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-            status: status || 'open',
-            isGLPI: isGLPI === 'true',
-            createdAt: createdAt ? new Date(createdAt) : new Date(),
-            createdBy: createdBy || 'Admin' // Utilise la valeur du formulaire ou une valeur par défaut
-        });
-
-        res.redirect('/'); // Redirigez l'utilisateur après la création
-    } catch (error) {
-        console.error('Erreur lors de la création du ticket:', error);
-        res.status(500).send('Erreur serveur');
-    }
-});
-
-// Démarrage du serveur
-async function startServer() {
-    try {
-        await sequelize.authenticate();
-        console.log('✅ Connexion à la base de données établie');
-
-        await sequelize.sync({ alter: true });
-        console.log('✅ Modèles synchronisés');
-
-        await fsPromises.mkdir(UPLOADS_DIR, { recursive: true });
-        console.log('✅ Dossier uploads vérifié');
-
-        const VERSION = 'Pré-Prod 1.0.7';
-        console.log(`🚀 Version du serveur : ${VERSION}`);
-
-        app.listen(process.env.PORT, () => {
-            console.log(`✨ Serveur démarré sur http://localhost:${process.env.PORT}`);
-        });
-    } catch (error) {
-        console.error('❌ Erreur de démarrage:', error);
-        process.exit(1);
-    }
-}
-
-// Démarrer le serveur
-startServer();
-
-module.exports = app;
+    </script>
+</body>
+</html>
+``` 
